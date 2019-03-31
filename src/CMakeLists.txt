@@ -15,6 +15,7 @@ set(systemSources
     systems/entitymanager.h
     systems/init.cpp
     systems/init.h
+    systems/component.cpp
     systems/component.h
     systems/position.cpp
     systems/position.h)

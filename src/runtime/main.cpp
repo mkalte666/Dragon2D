@@ -132,14 +132,10 @@ int main(int argc, char* argv[])
 
         
 
-
-        // system init
-        initSystems();
-
-        // inits the interpreter
         // we want the interpreter to exit before we deinit the systems
         // and we want the system initialiazed before we init the interpreter
-        pybind11::scoped_interpreter interpreter{};
+        initSystems();
+        pybind11::initialize_interpreter();
 
 
         // into the main loop
@@ -199,6 +195,7 @@ int main(int argc, char* argv[])
         }
 
         // cleanup 
+        pybind11::finalize_interpreter();
         finishSystems();
 
         SDL_DestroyRenderer(renderer);

@@ -15,34 +15,48 @@
 #ifndef _component_h
 #define _component_h
 
-#include "util/slotmap.h"
 #include "python/python.h"
+#include "util/slotmap.h"
+
+class ComponentWrapperBase {
+public:
+    virtual ~ComponentWrapperBase() = default;
+};
+using ComponentWrapperBasePtr = std::shared_ptr<ComponentWrapperBase>;
+
+PYBIND11_MAKE_OPAQUE(std::vector<ComponentWrapperBasePtr>);
 
 template <class SystemClass>
-class ComponentWrapper
-{
+class ComponentWrapper : public ComponentWrapperBase {
 public:
     using ComponentType = typename SystemClass::ComponentType;
     using IndexType = typename SystemClass::IndexType;
+    using Ptr = typename std::shared_ptr<ComponentWrapper>;
 
-    template <typename ...Args>
+    template <typename... Args>
     ComponentWrapper(Args&&... args)
     {
         index = SystemClass::instance->create(std::forward<Args>(args)...);
+        valid = true;
     }
 
-    ~ComponentWrapper() 
+    ComponentWrapper(ComponentWrapper&& other) = delete;
+
+    ComponentWrapper(const ComponentWrapper& other) = delete;
+
+    ~ComponentWrapper()
     {
         SystemClass::instance->remove(index);
     }
 
-    ComponentType& get() {
+    ComponentType& get()
+    {
         return SystemClass::instance->get(index);
     }
 
 private:
     IndexType index;
+    bool valid;
 };
-
 
 #endif //_component_h

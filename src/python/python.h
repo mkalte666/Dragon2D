@@ -15,7 +15,9 @@
 #ifndef _d2d_python_h
 #define _d2d_python_h
 
+#include <pybind11/functional.h>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 

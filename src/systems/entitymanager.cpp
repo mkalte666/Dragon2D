@@ -20,8 +20,6 @@ void EntityManager::addEntity(EntityPtr& ptr)
 {
     entites.push_back(ptr);
     ptr->id = static_cast<int>(entites.size() - 1);
-
-    ptr->initComponents();
 }
 
 void EntityManager::removeEntity(EntityPtr& ptr)

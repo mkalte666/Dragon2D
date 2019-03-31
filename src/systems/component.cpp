@@ -1,5 +1,5 @@
 /*
-    entity.h: entity implementation 
+    component.cpp: generic component wrapper
     Copyright (C) 2019 Malte Kieﬂling
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,33 +12,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "entity.h"
+
+#include "component.h"
 
 #include "python/python.h"
-#include <pybind11/stl.h>
 
-#include <iostream>
-
-Entity::Entity()
+class PyComponentBase
 {
-
-}
-
-void Entity::addComponent(ComponentWrapperBasePtr component)
-{
-    components.push_back(component);
-}
-
-
-class PyEntity : public PyEntityBase<> {
 public:
-    using PyEntityBase<>::PyEntityBase;
-    static void initModule(py::module& m)
-    {
-        py::class_<Entity, PyEntityBase<>, EntityPtr> e(m, "Entity", py::dynamic_attr());
-        e.def(py::init<>());
-        e.def_readonly("id", &Entity::id);
-        e.def("addComponent", &Entity::addComponent);
+    static void initModule(py::module& m) {
+        py::class_<ComponentWrapperBase, ComponentWrapperBasePtr> c(m, "PyComponentBase");
     }
 };
-PyType<PyEntity> entity;
+PyType<PyComponentBase> pycomponentbase;

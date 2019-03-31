@@ -18,13 +18,19 @@
 #include <memory>
 #include <python/python.h>
 
+#include "component.h"
+
 class Entity {
 public:
     Entity();
     virtual ~Entity() = default;
-    virtual void initComponents();
 
     int id = -1;
+
+    void addComponent(ComponentWrapperBasePtr component);
+
+private:
+    std::vector<ComponentWrapperBasePtr> components;
 };
 using EntityPtr = std::shared_ptr<Entity>;
 
@@ -32,9 +38,5 @@ template <class EntityBase = Entity>
 class PyEntityBase : public EntityBase {
 public:
     using EntityBase::EntityBase;
-    virtual void initComponents() override
-    {
-        PYBIND11_OVERLOAD(void, EntityBase, initComponents, );
-    }
 };
 #endif // _entity_h

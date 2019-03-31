@@ -33,7 +33,7 @@ class PyPositionComponent
 {
 public:
     static void initModule(py::module&m) {
-        py::class_<PositionComponent> c(m, "PositionComponent");
+        py::class_<PositionComponent, PositionComponent::Ptr, ComponentWrapperBase> c(m, "PositionComponent");
         c
             .def(py::init<>())
             .def(py::init<glm::vec2>())

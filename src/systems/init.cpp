@@ -18,12 +18,19 @@
 
 void initSystems()
 {
-    EntityManager::instance = std::make_shared<EntityManager>();
+    
     PositionSystem::instance = std::make_shared<PositionSystem>();
+
+    // this thing can hold references to all the others, so destroy first and init last
+    EntityManager::instance = std::make_shared<EntityManager>();
 }
 
 void finishSystems()
 {
-    PositionSystem::instance.reset();
+    // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance.reset();
+
+    // now the rest
+    PositionSystem::instance.reset();
+    
 }
