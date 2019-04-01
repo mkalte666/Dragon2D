@@ -25,7 +25,11 @@ set(systemSources
     systems/transform.h)
 
 set(utilSources
-    util/slotmap.h)
+    util/slotmap.h
+    util/tiled/tmx.cpp
+    util/tiled/tmx.h
+    util/tiled/tsx.cpp
+    util/tiled/tsx.h)
 
 set(d2dSources 
     ${runtimeSources}
