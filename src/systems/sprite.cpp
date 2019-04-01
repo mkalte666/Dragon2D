@@ -97,7 +97,7 @@ SpriteSystem::~SpriteSystem()
 
 SpriteSystem::IndexType SpriteSystem::create(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer)
 {
-    return create(transformComponent.getIndex(),filename,layer);
+    return create(transformComponent.getIndex(), filename, layer);
 }
 
 SpriteSystem::IndexType SpriteSystem::create(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer)
@@ -127,8 +127,6 @@ SpriteSystem::IndexType SpriteSystem::create(const TransformSystem::IndexType& t
     if (textureLayer == drawLayer.end()) {
         textureLayer = drawLayer.insert(std::make_pair(texId, new SpriteSystemData::TextureEntry())).first;
     }
-
-    
 
     newSprite.transformId = transformId;
 
@@ -235,6 +233,18 @@ void SpriteSystem::update(double dt)
         }
     }
 }
+
+class PySourceSlice {
+public:
+    static void initModule(py::module&m)
+    {
+        py::class_<SourceSlice> c(m, "SourceSlice");
+        c
+            .def(py::init<>())
+            .def_readwrite("src", &SourceSlice::src)
+            .def_readwrite("srcSize", &SourceSlice::srcSize);
+    }
+};
 
 class PySprite {
 public:

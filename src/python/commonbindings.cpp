@@ -59,3 +59,29 @@ public:
     }
 };
 PyType<PyVec2> pyvec2;
+
+class PyIVec2 {
+public:
+    static void initModule(py::module& rootmod)
+    {
+        auto m = rootmod.def_submodule("glm", "some abstraction for some of the glm vector classes");
+        py::class_<glm::ivec2> c(m, "ivec2");
+        // constructors
+        c
+            .def(py::init<>())
+            .def(py::init<int, int>())
+            .def(py::init<int>());
+        // members
+        c
+            .def_readwrite("x", &glm::ivec2::x)
+            .def_readwrite("y", &glm::ivec2::y);
+
+        // some operators
+        c
+            .def(py::self + py::self)
+            .def(py::self - py::self)
+            .def(py::self * py::self);
+
+    }
+};
+PyType<PyIVec2> pyivec2;
