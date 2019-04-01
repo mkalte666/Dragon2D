@@ -29,8 +29,12 @@ public:
 
     void addComponent(ComponentWrapperBasePtr component);
 
+    void destroy();
+    bool getIsDestroyed() const;
+
 private:
     std::vector<ComponentWrapperBasePtr> components;
+    bool isDestroyed;
 };
 using EntityPtr = std::shared_ptr<Entity>;
 

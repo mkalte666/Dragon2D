@@ -17,5 +17,6 @@
 
 void initSystems();
 void finishSystems();
+void updateSystems(double dt);
 
 #endif //_system_init_h

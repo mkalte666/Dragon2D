@@ -20,8 +20,9 @@
 #include <iostream>
 
 Entity::Entity()
+    : components()
+    , isDestroyed(false)
 {
-
 }
 
 void Entity::addComponent(ComponentWrapperBasePtr component)
@@ -29,6 +30,15 @@ void Entity::addComponent(ComponentWrapperBasePtr component)
     components.push_back(component);
 }
 
+void Entity::destroy()
+{
+    isDestroyed = true;
+}
+
+bool Entity::getIsDestroyed() const
+{
+    return isDestroyed;
+}
 
 class PyEntity : public PyEntityBase<> {
 public:
@@ -39,6 +49,7 @@ public:
         e.def(py::init<>());
         e.def_readonly("id", &Entity::id);
         e.def("addComponent", &Entity::addComponent);
+        e.def("destroy", &Entity::destroy);
     }
 };
 PyType<PyEntity> entity;

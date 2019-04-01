@@ -41,6 +41,15 @@ void EntityManager::removeEntity(EntityPtr& ptr)
     entites.pop_back();
 }
 
+void EntityManager::update(double dt)
+{
+    for (auto&& e : entites) {
+        if (e->getIsDestroyed()) {
+            removeEntity(e);
+        }
+    }
+}
+
 std::shared_ptr<EntityManager> EntityManager::instance(nullptr);
 
 class PyEntityManager : public EntityManager {

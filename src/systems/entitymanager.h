@@ -24,6 +24,8 @@ public:
 
     void removeEntity(EntityPtr& ptr);
 
+    void update(double dt);
+
     std::vector<EntityPtr> entites;
     static std::shared_ptr<EntityManager> instance;
 };

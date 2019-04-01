@@ -29,6 +29,7 @@
 
 #include <pybind11/embed.h>
 #include "runtime/filename.h"
+#include "runtime/window.h"
 #include "systems/init.h"
 
 int main(int argc, char* argv[])
@@ -90,21 +91,20 @@ int main(int argc, char* argv[])
         SDL_DisplayMode current;
         SDL_GetCurrentDisplayMode(0, &current);
 
-        SDL_Window* window = SDL_CreateWindow(appName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-        if (!window) {
+        Window::window = SDL_CreateWindow(appName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+        if (!Window::window) {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Cannot create window", SDL_GetError(), nullptr);
             std::cerr << "Cannot create window" << SDL_GetError() << std::endl;
             exit(3);
         }
 
-        SDL_Renderer* renderer;
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-        if (!renderer) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Cannot create renderer", SDL_GetError(), window);
+        Window::renderer = SDL_CreateRenderer(Window::window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+        if (!Window::renderer) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Cannot create renderer", SDL_GetError(), Window::window);
             std::cerr << "Cannot create renderer" << SDL_GetError() << std::endl;
             exit(3);
         }
-        SDL_RenderClear(renderer); // makes renderer active
+        SDL_RenderClear(Window::renderer); // makes renderer active
 
         // gl3w
         auto gl3wres = gl3wInit();
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         // we are supposed to give a context here, but what for?
-        ImGui_ImplSDL2_InitForOpenGL(window, nullptr);
+        ImGui_ImplSDL2_InitForOpenGL(Window::window, nullptr);
         ImGui_ImplOpenGL3_Init(glsl_version);
         (void)io;
         ImGui::StyleColorsDark();
@@ -166,25 +166,27 @@ int main(int argc, char* argv[])
             }
 
             // clear screen
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
+            SDL_SetRenderDrawColor(Window::renderer, 0, 0, 0, 255);
+            SDL_RenderClear(Window::renderer);
 
             // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplSDL2_NewFrame(window);
+            ImGui_ImplSDL2_NewFrame(Window::window);
             ImGui::NewFrame();
 
+            // now do the system updates
+            updateSystems(deltaTime);
+
             // this flushes the renderer. after this only imgui
-            SDL_RenderFlush(renderer);
+            SDL_RenderFlush(Window::renderer);
 
             // now render imgui
             ImGui::Render(); // thos does not actually render (as in: draw calls)
             glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); // this does, though
             // and swap
-            SDL_GL_SwapWindow(window);
+            SDL_GL_SwapWindow(Window::window);
 
-            // now do rendering until next frame!
 
             deltaTime = (double)((now - last) / (double)SDL_GetPerformanceFrequency());
             last = now;
@@ -198,8 +200,8 @@ int main(int argc, char* argv[])
         pybind11::finalize_interpreter();
         finishSystems();
 
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(Window::renderer);
+        SDL_DestroyWindow(Window::window);
     }
     SDL_Quit();
 

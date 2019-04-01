@@ -1,7 +1,9 @@
 set(runtimeSources 
     runtime/main.cpp
     runtime/filename.h
-    runtime/filename.cpp)
+    runtime/filename.cpp
+    runtime/window.cpp
+    runtime/window.h)
 
 set(pythonSources
     python/commonbindings.cpp
@@ -17,8 +19,10 @@ set(systemSources
     systems/init.h
     systems/component.cpp
     systems/component.h
-    systems/position.cpp
-    systems/position.h)
+    systems/sprite.cpp
+    systems/sprite.h
+    systems/transform.cpp
+    systems/transform.h)
 
 set(utilSources
     util/slotmap.h)

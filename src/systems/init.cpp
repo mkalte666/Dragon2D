@@ -13,13 +13,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "systems/init.h"
+#include "systems/sprite.h"
 #include "systems/entitymanager.h"
-#include "systems/position.h"
+#include "systems/transform.h"
 
 void initSystems()
 {
-    
-    PositionSystem::instance = std::make_shared<PositionSystem>();
+
+    TransformSystem::instance = std::make_shared<TransformSystem>();
+    SpriteSystem::instance = std::make_shared<SpriteSystem>();
 
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance = std::make_shared<EntityManager>();
@@ -31,6 +33,12 @@ void finishSystems()
     EntityManager::instance.reset();
 
     // now the rest
-    PositionSystem::instance.reset();
-    
+    SpriteSystem::instance.reset();
+    TransformSystem::instance.reset();
+}
+
+void updateSystems(double dt)
+{
+    EntityManager::instance->update(dt);
+    SpriteSystem::instance->update(dt);
 }

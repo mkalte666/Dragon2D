@@ -21,6 +21,46 @@
 #include <type_traits>
 #include <vector>
 
+struct SlotMapIndex {
+    SlotMapIndex() = default;
+    SlotMapIndex(uint64_t intIndex)
+    {
+        index = static_cast<uint32_t>(intIndex & 0x00000000FFFFFFFF);
+        generation = static_cast<uint32_t>((intIndex >> 32) & 0x00000000FFFFFFFF);
+    }
+
+    uint32_t generation;
+    uint32_t index;
+    bool operator==(const SlotMapIndex& other) const
+    {
+        return index == other.index && generation == other.generation;
+    }
+    bool operator<(const SlotMapIndex& other) const
+    {
+        return index < other.index;
+    }
+    bool operator>(const SlotMapIndex& other) const
+    {
+        return index > other.index;
+    }
+    uint64_t toInt() const
+    {
+        return (static_cast<uint64_t>(generation) << 32 | static_cast<uint64_t>(index));
+    }
+};
+
+namespace std {
+template <>
+struct hash<SlotMapIndex> {
+    typedef SlotMapIndex argument_type;
+    typedef std::size_t result_type;
+    result_type operator()(argument_type const& s) const noexcept
+    {
+        return s.toInt();
+    }
+};
+}
+
 template <class T, size_t baseSize = 256>
 class SlotMap {
 public:
@@ -41,22 +81,7 @@ public:
     };
     using ChunkArray = std::vector<std::unique_ptr<Chunk>>;
     using FreeList = std::vector<int>;
-    struct IndexType {
-        uint32_t generation;
-        uint32_t index;
-        bool operator==(const IndexType& other) const 
-        {
-            return index == other.index && generation == other.generation;
-        }
-        bool operator<(const IndexType& other) const
-        {
-            return index < other.index;
-        }
-        bool operator>(const IndexType& other) const
-        {
-            return index > other.index;
-        }
-    };
+    using IndexType = SlotMapIndex;
 
     struct iterator {
         using iterator_category = std::forward_iterator_tag;
@@ -238,6 +263,11 @@ public:
 
     T& operator[](const IndexType& index)
     {
+        return *reinterpret_cast<T*>(&data[index.index / baseSize]->data[index.index % baseSize].data);
+    }
+    T& operator[](uint64_t intIndex)
+    {
+        IndexType index(intIndex);
         return *reinterpret_cast<T*>(&data[index.index / baseSize]->data[index.index % baseSize].data);
     }
 

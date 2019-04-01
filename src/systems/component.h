@@ -54,6 +54,11 @@ public:
         return SystemClass::instance->get(index);
     }
 
+    IndexType getIndex() const
+    {
+        return index;
+    }
+
 private:
     IndexType index;
     bool valid;
