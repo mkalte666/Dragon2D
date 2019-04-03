@@ -23,16 +23,16 @@ public:
     Tsx();
     Tsx(const std::string& filename);
 
-    int count;
-    int tilew;
-    int tileh;
-    int spacing;
-    int margin;
-    int tilecount;
-    int columns;
-    std::string name;
-    std::string imageFilename;
-    int firstgid;
+    int count = 0;
+    int tilew = 0;
+    int tileh = 0;
+    int spacing = 0;
+    int margin = 0;
+    int tilecount = 0;
+    int columns = 0;
+    std::string name = "";
+    std::string imageFilename ="";
+    uint32_t firstgid = 0;
 };
 
 #endif //_util_tiled_tsx_h

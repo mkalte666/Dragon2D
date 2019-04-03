@@ -16,12 +16,14 @@
 #include "systems/sprite.h"
 #include "systems/entitymanager.h"
 #include "systems/transform.h"
+#include "systems/tilemap.h"
 
 void initSystems()
 {
 
     TransformSystem::instance = std::make_shared<TransformSystem>();
     SpriteSystem::instance = std::make_shared<SpriteSystem>();
+    TilemapSystem::instance = std::make_shared<TilemapSystem>();
 
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance = std::make_shared<EntityManager>();
@@ -33,6 +35,7 @@ void finishSystems()
     EntityManager::instance.reset();
 
     // now the rest
+    TilemapSystem::instance.reset();
     SpriteSystem::instance.reset();
     TransformSystem::instance.reset();
 }
@@ -41,4 +44,5 @@ void updateSystems(double dt)
 {
     EntityManager::instance->update(dt);
     SpriteSystem::instance->update(dt);
+    TilemapSystem::instance->update(dt);
 }

@@ -3,10 +3,9 @@ import d2d;
 def foo():
     e = d2d.Entity()
     pos = d2d.TransformComponent()
-    pos.get().scale = d2d.glm.vec2(0.1)
-    pos.get().flipHorizontal = True
-    sprite = d2d.SpriteComponent(pos,d2d.Filename.gameFile("textures/hihu_happy.png"), 0)
+    pos.get().position = d2d.glm.vec2(200,200)
+    map = d2d.TilemapComponent(pos, d2d.Filename.gameFile("maps/test.tmx"))
     e.addComponent(pos)
-    e.addComponent(sprite)
+    e.addComponent(map)
     d2d.entityManager.addEntity(e)
 foo()

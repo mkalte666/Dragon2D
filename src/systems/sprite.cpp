@@ -78,6 +78,7 @@ public:
     Layers layers;
 
     SlotMap<SpriteSystem::UniqueSpriteIndex> lookup;
+    SlotMap<SpriteSystem::UniqueBatchIndex> lookupBatch;
 
     // filename->texture association
     std::map<std::string, TextureMap::IndexType> filenames;
@@ -177,12 +178,86 @@ void SpriteSystem::remove(const IndexType& i)
     }
 }
 
+SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer, const std::vector<BatchSprite>& inBatch)
+{
+    SpriteBatch newBatch;
+
+    auto filenameIter = data->filenames.find(filename);
+    if (filenameIter == data->filenames.end()) {
+        auto img = IMG_Load(filename.c_str());
+        if (!img) {
+            SDL_Log("Cannot open file %s - %s", filename.c_str(), IMG_GetError());
+            return SpriteSystem::IndexType();
+        }
+
+        auto texId = data->textures.emplace(img);
+        filenameIter = data->filenames.insert(std::make_pair(filename, texId)).first;
+    }
+    auto texId = filenameIter->second;
+
+    data->textures[texId].refcount += 1;
+
+    auto& drawLayer = data->layers[layer];
+    auto textureLayer = drawLayer.find(texId);
+    if (textureLayer == drawLayer.end()) {
+        textureLayer = drawLayer.insert(std::make_pair(texId, new SpriteSystemData::TextureEntry())).first;
+    }
+
+    newBatch.transformId = transformId;
+    newBatch.batch = inBatch;
+
+
+    auto batchIndex = textureLayer->second->batches.insert(std::move(newBatch));
+    UniqueBatchIndex index;
+    index.texture = texId.toInt();
+    index.entry = batchIndex.toInt();
+    index.layer = layer;
+
+    return data->lookupBatch.insert(index);
+}
+
+SpriteBatch& SpriteSystem::getBatch(const BatchIndexType& i)
+{
+    auto& index = data->lookup[i];
+    auto& layer = data->layers[index.layer];
+    auto& spriteLayer = layer.find(index.texture);
+    auto& batch = spriteLayer->second->batches.find(index.entry);
+
+    return *batch;
+}
+
+void SpriteSystem::removeBatch(const BatchIndexType& i)
+{
+    auto& index = data->lookupBatch[i];
+    auto& layer = data->layers[index.layer];
+    auto& textures = data->textures;
+    auto spriteLayerIter = layer.find(index.texture);
+    auto textureIter = textures.find(index.texture);
+    // is that even a texture in the layer
+    if (spriteLayerIter != layer.end()) {
+        auto& batches = spriteLayerIter->second->batches;
+        // that sprite is still alive my friend
+        if (batches.find(index.entry) != batches.end()) {
+            batches.remove(index.entry);
+            // make sure the texture still actually exsists
+            if (textureIter != textures.end()) {
+                textureIter->refcount--;
+                if (!textureIter->refcount) {
+                    textures.remove(index.texture);
+                }
+            }
+        }
+    }
+}
+
 inline void drawOne(
     const glm::vec2& camera,
     const TextureWrapper& texture,
     const Transform2D& transform,
     const glm::vec2& offset,
-    const SourceSlice& source)
+    const SourceSlice& source,
+    bool hFlip,
+    bool vFlip)
 {
 
     SDL_Rect srcRect;
@@ -204,7 +279,7 @@ inline void drawOne(
         &dstRect,
         transform.rotation,
         nullptr,
-        transform.flipHorizontal ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE || transform.flipVertical ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
+        hFlip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE || vFlip ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
 }
 
 void SpriteSystem::update(double dt)
@@ -220,14 +295,14 @@ void SpriteSystem::update(double dt)
             // render single sprites
             for (auto&& sprite : texture.second->sprites) {
                 const auto& transform = TransformSystem::instance->get(sprite.transformId);
-                drawOne(cameraOffset, tex, transform, sprite.offset, sprite.source);
+                drawOne(cameraOffset, tex, transform, sprite.offset, sprite.source, transform.flipHorizontal, transform.flipVertical);
             }
 
             // render batches
             for (auto&& batch : texture.second->batches) {
                 const auto& transform = TransformSystem::instance->get(batch.transformId);
                 for (auto&& single : batch.batch) {
-                    drawOne(cameraOffset, tex, transform, single.second, single.first);
+                    drawOne(cameraOffset, tex, transform, single.pos, single.src, single.hFlip, single.vFlip);
                 }
             }
         }

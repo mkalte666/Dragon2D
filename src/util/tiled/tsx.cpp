@@ -19,30 +19,10 @@
 namespace xml = tinyxml2;
 
 Tsx::Tsx()
-    : count(0)
-    , tilew(0)
-    , tileh(0)
-    , spacing(0)
-    , margin(0)
-    , tilecount(0)
-    , columns(0)
-    , name("")
-    , imageFilename("")
-    , firstgid(0)
 {
 }
 
 Tsx::Tsx(const std::string& filename)
-    : count(0)
-    , tilew(0)
-    , tileh(0)
-    , spacing(0)
-    , margin(0)
-    , tilecount(0)
-    , columns(0)
-    , name("")
-    , imageFilename("")
-    , firstgid(0)
 {
     xml::XMLDocument doc;
     auto err = doc.LoadFile(filename.c_str());

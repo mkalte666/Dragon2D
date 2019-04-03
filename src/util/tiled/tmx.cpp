@@ -14,10 +14,15 @@
 */
 #include "tmx.h"
 
-#include <tinyxml2.h>
 #include <algorithm>
+#include <sstream>
+#include <tinyxml2.h>
 
 namespace xml = tinyxml2;
+
+const unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+const unsigned FLIPPED_VERTICALLY_FLAG = 0x40000000;
+const unsigned FLIPPED_DIAGONALLY_FLAG = 0x20000000;
 
 Tmx::Tmx(const std::string& filename)
 {
@@ -37,9 +42,10 @@ Tmx::Tmx(const std::string& filename)
 
     // fetch and load all tilesets
     for (auto tset = map->FirstChildElement("tileset"); tset; tset = tset->NextSiblingElement("tileset")) {
-        auto filename = basepath + tset->Attribute("source");
+        auto filename = basepath + "/" + tset->Attribute("source");
         Tsx tileset(filename);
-        tileset.firstgid = tset->IntAttribute("firstgid");
+        tileset.firstgid = tset->UnsignedAttribute("firstgid", 0);
+        tilesets.push_back(std::move(tileset));
     }
 
     // sort them by gid
@@ -47,5 +53,68 @@ Tmx::Tmx(const std::string& filename)
         return l.firstgid < r.firstgid;
     });
 
-    
+    for (auto layerTag = map->FirstChildElement("layer"); layerTag; layerTag = layerTag->NextSiblingElement("layer")) {
+        // load the layer meta data
+        Layer layer;
+        layer.id = layerTag->IntAttribute("id", 0);
+        layer.name = layerTag->Attribute("name");
+        layer.x = layerTag->IntAttribute("x", 0);
+        layer.y = layerTag->IntAttribute("y", 0);
+        layer.width = layerTag->IntAttribute("width", 0);
+        layer.height = layerTag->IntAttribute("height", 0);
+        layer.opacity = layerTag->FloatAttribute("opacity", 1.0f);
+        layer.visible = layerTag->BoolAttribute("visible", true);
+        layer.offsetx = layerTag->IntAttribute("offsetx", 0);
+        layer.offsety = layerTag->IntAttribute("offsety", 0);
+
+        auto dataTag = layerTag->FirstChildElement("data");
+        if (!dataTag) {
+            break;
+        }
+
+        for (auto chunkTag = dataTag->FirstChildElement("chunk"); chunkTag; chunkTag = chunkTag->NextSiblingElement("chunk")) {
+            for (int i = 0; i < tilesets.size(); i++) {
+                Chunk newChunk;
+                newChunk.x = chunkTag->IntAttribute("x", 0);
+                newChunk.y = chunkTag->IntAttribute("y", 0);
+                newChunk.width = chunkTag->IntAttribute("width", 0);
+                newChunk.height = chunkTag->IntAttribute("height", 0);
+
+                layer.chunks[i].push_back(std::move(newChunk));
+            }
+
+            decode(layer, chunkTag->GetText());
+        }
+
+        layers.push_back(std::move(layer));
+    }
+}
+
+void Tmx::decode(Layer& layer, const std::string& data)
+{
+    std::string token;
+    std::istringstream ss(data);
+    while (std::getline(ss, token, ',')) {
+        uint32_t gid = static_cast<uint32_t>(std::stoll(token));
+        bool flippedDiagonally = (gid & FLIPPED_DIAGONALLY_FLAG);
+        bool flippedHorizontally = (gid & FLIPPED_HORIZONTALLY_FLAG) || flippedDiagonally;
+        bool flippedVertically = (gid & FLIPPED_VERTICALLY_FLAG) || flippedDiagonally;
+
+        gid &= ~(FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG);
+
+        for (int i = 0; i < tilesets.size(); i++) {
+            auto& tiles = layer.chunks[i].back().tiles;
+
+            if (gid == 0 || gid < tilesets[i].firstgid || gid >= tilesets[i].firstgid + tilesets[i].count) {
+                tiles.push_back(Tile());
+                continue;
+            }
+
+            Tile t;
+            t.hFlip = flippedHorizontally;
+            t.vFlip = flippedVertically;
+            t.id = gid - tilesets[i].firstgid;
+            tiles.push_back(t);
+        }
+    }
 }

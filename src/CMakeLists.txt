@@ -21,6 +21,8 @@ set(systemSources
     systems/component.h
     systems/sprite.cpp
     systems/sprite.h
+    systems/tilemap.cpp
+    systems/tilemap.h
     systems/transform.cpp
     systems/transform.h)
 

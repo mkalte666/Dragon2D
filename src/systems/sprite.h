@@ -29,9 +29,16 @@ struct Sprite {
     SourceSlice source;
 };
 
+struct BatchSprite {
+    SourceSlice src;
+    glm::vec2 pos;
+    bool hFlip = false;
+    bool vFlip = false;
+};
+
 struct SpriteBatch {
     TransformSystem::IndexType transformId;
-    std::vector<std::pair<SourceSlice, glm::vec2>> batch;
+    std::vector<BatchSprite> batch;
 };
 
 class SpriteSystemData;
@@ -43,7 +50,13 @@ public:
         uint64_t entry;
         uint8_t layer;
     };
+    struct UniqueBatchIndex {
+        SlotMapIndex texture;
+        SlotMapIndex entry;
+        uint8_t layer;
+    };
     using IndexType = SlotMap<UniqueSpriteIndex>::IndexType;
+    using BatchIndexType = SlotMap<UniqueBatchIndex>::IndexType;
 
     SpriteSystem();
     ~SpriteSystem();
@@ -52,7 +65,11 @@ public:
     IndexType create(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer);
     Sprite& get(const IndexType& i);
     void remove(const IndexType& i);
-    
+
+    BatchIndexType createBatch(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer, const std::vector<BatchSprite>& inBatch);
+    SpriteBatch& getBatch(const BatchIndexType& i);
+    void removeBatch(const BatchIndexType& i);
+
     void update(double dt);
 
     static std::shared_ptr<SpriteSystem> instance;
