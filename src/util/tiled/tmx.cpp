@@ -40,6 +40,13 @@ Tmx::Tmx(const std::string& filename)
         return;
     }
 
+    // load the properties
+    if (auto propertiesTag = map->FirstChildElement("properties"); propertiesTag) {
+        for (auto propertyTag = propertiesTag->FirstChildElement("property"); propertyTag; propertyTag = propertyTag->NextSiblingElement("property")) {
+            properties[propertyTag->Attribute("name")] = propertyTag->Attribute("value");
+        }
+    }
+
     // fetch and load all tilesets
     for (auto tset = map->FirstChildElement("tileset"); tset; tset = tset->NextSiblingElement("tileset")) {
         auto filename = basepath + "/" + tset->Attribute("source");

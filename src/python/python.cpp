@@ -46,3 +46,12 @@ PYBIND11_EMBEDDED_MODULE(d2d, m)
 {
     PyClassList::initAll(m);
 }
+
+void pyEval(const std::string& p)
+{
+    try {
+        py::eval(p.c_str());
+    } catch (std::exception e) {
+        SDL_Log("Python During Eval of \n====\n%s\n====\nERROR: %s", p.c_str(), e.what());
+    }
+}

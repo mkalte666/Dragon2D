@@ -15,9 +15,10 @@
 #ifndef _d2d_python_h
 #define _d2d_python_h
 
-#include <pybind11/functional.h>
 #include <pybind11/embed.h>
+#include <pybind11/functional.h>
 #include <pybind11/stl.h>
+#include <SDL.h>
 
 namespace py = pybind11;
 
@@ -44,5 +45,7 @@ protected:
         T::initModule(m);
     }
 };
+
+void pyEval(const std::string& p);
 
 #endif //_d2d_python_h

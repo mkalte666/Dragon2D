@@ -16,6 +16,7 @@
 #define _util_tiled_tmx_h
 
 #include "tsx.h"
+#include <map>
 #include <unordered_map>
 
 class Tmx {
@@ -49,6 +50,7 @@ public:
 
     std::vector<Tsx> tilesets;
     std::vector<Layer> layers;
+    std::map<std::string, std::string> properties;
 
 private:
     void decode(Layer& layer, const std::string& data);

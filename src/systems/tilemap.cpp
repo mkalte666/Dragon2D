@@ -63,6 +63,16 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
         }
     }
 
+    // TODO: objects
+
+    // instance the class object (if provided) and the eval tag
+    if (auto iter = mapfile.properties.find("instance"); iter != mapfile.properties.end()) {
+        pyEval(iter->second);
+    }
+    if (auto iter = mapfile.properties.find("eval"); iter != mapfile.properties.end()) {
+        pyEval(iter->second);
+    }
+
     return tilemaps.insert(map);
 }
 
