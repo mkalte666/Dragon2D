@@ -16,6 +16,7 @@
 
 #include "runtime/window.h"
 #include "util/slotmap.h"
+#include "systems/camera.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glm/glm.hpp>
@@ -36,7 +37,7 @@ public:
         SDL_FreeSurface(surface);
     }
 
-    TextureWrapper(TextureWrapper&& other)
+    TextureWrapper(TextureWrapper&& other) noexcept
     {
         tex = other.tex;
         other.tex = nullptr;
@@ -113,8 +114,8 @@ SpriteSystem::IndexType SpriteSystem::create(const TransformSystem::IndexType& t
             return SpriteSystem::IndexType();
         }
         // FIXME: does this really need to default? probably yes.
-        newSprite.source.srcSize.x = img->w;
-        newSprite.source.srcSize.y = img->h;
+        newSprite.source.w = img->w;
+        newSprite.source.h = img->h;
 
         auto texId = data->textures.emplace(img);
         filenameIter = data->filenames.insert(std::make_pair(filename, texId)).first;
@@ -206,7 +207,6 @@ SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::In
     newBatch.transformId = transformId;
     newBatch.batch = inBatch;
 
-
     auto batchIndex = textureLayer->second->batches.insert(std::move(newBatch));
     UniqueBatchIndex index;
     index.texture = texId.toInt();
@@ -255,16 +255,16 @@ inline void drawOne(
     const TextureWrapper& texture,
     const Transform2D& transform,
     const glm::vec2& offset,
-    const SourceSlice& source,
+    const Rect& source,
     bool hFlip,
     bool vFlip)
 {
 
     SDL_Rect srcRect;
-    srcRect.x = source.src.x;
-    srcRect.y = source.src.y;
-    srcRect.w = source.srcSize.x;
-    srcRect.h = source.srcSize.y;
+    srcRect.x = source.x;
+    srcRect.y = source.y;
+    srcRect.w = source.w;
+    srcRect.h = source.h;
 
     SDL_FRect dstRect;
     dstRect.x = transform.position.x + offset.x - camera.x;
@@ -284,42 +284,49 @@ inline void drawOne(
 
 void SpriteSystem::update(double dt)
 {
+    SDL_Rect fullViewport;
+    SDL_RenderGetViewport(Window::renderer, &fullViewport);
     // for each camera
-    glm::vec2 cameraOffset = glm::vec2(0.0);
+    for (auto&& camera : CameraSystem::instance->getCameras()) {
+        if (!camera.fillTarget) {
+            SDL_Rect viewport = { camera.viewport.x, camera.viewport.y, camera.viewport.w, camera.viewport.h };
+            SDL_RenderSetViewport(Window::renderer, &viewport);
+        } else {
+            SDL_RenderSetViewport(Window::renderer, &fullViewport);
+        }
 
-    // for each layer
-    for (auto&& layer : data->layers) {
-        // for each type of texture
-        for (auto&& texture : layer) {
-            auto& tex = data->textures[texture.first];
-            // render single sprites
-            for (auto&& sprite : texture.second->sprites) {
-                const auto& transform = TransformSystem::instance->get(sprite.transformId);
-                drawOne(cameraOffset, tex, transform, sprite.offset, sprite.source, transform.flipHorizontal, transform.flipVertical);
-            }
+		const auto& cameraOffset = TransformSystem::instance->get(camera.transformId).position + camera.offset;
+        // for each layer
+        for (auto&& layer : data->layers) {
+            // for each type of texture
+            for (auto&& texture : layer) {
+                auto& tex = data->textures[texture.first];
+                // render single sprites
+                for (auto&& sprite : texture.second->sprites) {
+                    const auto& transform = TransformSystem::instance->get(sprite.transformId);
+                    drawOne(cameraOffset, tex, transform, sprite.offset, sprite.source, transform.flipHorizontal, transform.flipVertical);
+                }
 
-            // render batches
-            for (auto&& batch : texture.second->batches) {
-                const auto& transform = TransformSystem::instance->get(batch.transformId);
-                for (auto&& single : batch.batch) {
-                    drawOne(cameraOffset, tex, transform, single.pos, single.src, single.hFlip, single.vFlip);
+                // render batches
+                for (auto&& batch : texture.second->batches) {
+                    const auto& transform = TransformSystem::instance->get(batch.transformId);
+                    for (auto&& single : batch.batch) {
+                        drawOne(cameraOffset, tex, transform, single.pos, single.src, single.hFlip, single.vFlip);
+                    }
                 }
             }
         }
-    }
-}
 
-class PySourceSlice {
-public:
-    static void initModule(py::module&m)
-    {
-        py::class_<SourceSlice> c(m, "SourceSlice");
-        c
-            .def(py::init<>())
-            .def_readwrite("src", &SourceSlice::src)
-            .def_readwrite("srcSize", &SourceSlice::srcSize);
+		if (!camera.fillTarget) {
+            
+        }
     }
-};
+
+	SDL_RenderSetViewport(Window::renderer, &fullViewport);
+    glm::vec2 cameraOffset = glm::vec2(0.0);
+
+    
+}
 
 class PySprite {
 public:
@@ -332,7 +339,7 @@ public:
             .def_readwrite("source", &Sprite::source);
     }
 };
-PyType<PySprite> pysprite;
+PyType<Sprite, PySprite, glm::vec2> pysprite;
 
 class PySpriteComponent {
 public:
@@ -344,4 +351,4 @@ public:
             .def("get", &SpriteComponent::get, py::return_value_policy::reference);
     }
 };
-PyType<PySpriteComponent> pyspritecomponent;
+PyType<SpriteComponent, PySpriteComponent, ComponentWrapperBase, Sprite> pyspritecomponent;

@@ -62,4 +62,4 @@ public:
         m.attr("entityManager") = EntityManager::instance;
     }
 };
-PyType<PyEntityManager> entityManager;
+PyType<EntityManager, PyEntityManager, Entity> entityManager;

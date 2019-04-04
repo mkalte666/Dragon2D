@@ -49,7 +49,7 @@ public:
             .def_readwrite("flipVertical", &Transform2D::flipVertical);
     }
 };
-PyType<PyTransform2D> pytransform2d;
+PyType<Transform2D, PyTransform2D, glm::vec2> pytransform2d;
 
 std::shared_ptr<TransformSystem> TransformSystem::instance(nullptr);
 
@@ -74,5 +74,5 @@ public:
             .def("get", &TransformComponent::get, py::return_value_policy::reference);
     }
 };
-PyType<PyTransformComponent> pytransformcomponent;
+PyType<TransformComponent, PyTransformComponent, ComponentWrapperBase, Transform2D> pytransformcomponent;
 

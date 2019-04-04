@@ -69,6 +69,7 @@ public:
         StorageType()
             : free(false)
             , generation(0)
+            , data()
         {
         }
         bool free;

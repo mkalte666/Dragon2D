@@ -11,6 +11,8 @@ set(pythonSources
     python/python.h)
 
 set(systemSources 
+	systems/camera.cpp
+	systems/camera.h
     systems/entity.cpp
     systems/entity.h
     systems/entitymanager.cpp
@@ -27,6 +29,8 @@ set(systemSources
     systems/transform.h)
 
 set(utilSources
+	util/rect.cpp
+	util/rect.h
     util/slotmap.h
     util/tiled/tmx.cpp
     util/tiled/tmx.h

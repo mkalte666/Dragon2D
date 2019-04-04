@@ -58,7 +58,7 @@ public:
             .def("refract", &glm::refract<2, float, glm::precision::highp>);
     }
 };
-PyType<PyVec2> pyvec2;
+PyType<glm::vec2, PyVec2> pyvec2;
 
 class PyIVec2 {
 public:
@@ -84,4 +84,4 @@ public:
 
     }
 };
-PyType<PyIVec2> pyivec2;
+PyType<glm::ivec2, PyIVec2> pyivec2;

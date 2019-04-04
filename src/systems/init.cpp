@@ -13,15 +13,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "systems/init.h"
-#include "systems/sprite.h"
+#include "systems/camera.h"
 #include "systems/entitymanager.h"
-#include "systems/transform.h"
+#include "systems/sprite.h"
 #include "systems/tilemap.h"
+#include "systems/transform.h"
 
 void initSystems()
 {
 
     TransformSystem::instance = std::make_shared<TransformSystem>();
+    CameraSystem::instance = std::make_shared<CameraSystem>();
     SpriteSystem::instance = std::make_shared<SpriteSystem>();
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
 
@@ -37,6 +39,7 @@ void finishSystems()
     // now the rest
     TilemapSystem::instance.reset();
     SpriteSystem::instance.reset();
+    CameraSystem::instance.reset();
     TransformSystem::instance.reset();
 }
 

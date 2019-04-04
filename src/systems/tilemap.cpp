@@ -44,10 +44,10 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
                         continue;
                     }
                     BatchSprite sprite;
-                    sprite.src.src.x = tileset.margin + (tile.id % tileset.columns) * (tileset.tilew + tileset.margin * 2 + tileset.spacing);
-                    sprite.src.src.y = tileset.margin + (tile.id / tileset.columns) * (tileset.tileh + tileset.margin * 2 + tileset.spacing);
-                    sprite.src.srcSize.x = tileset.tilew;
-                    sprite.src.srcSize.y = tileset.tileh;
+                    sprite.src.x = tileset.margin + (tile.id % tileset.columns) * (tileset.tilew + tileset.margin * 2 + tileset.spacing);
+                    sprite.src.y = tileset.margin + (tile.id / tileset.columns) * (tileset.tileh + tileset.margin * 2 + tileset.spacing);
+                    sprite.src.w = tileset.tilew;
+                    sprite.src.h = tileset.tileh;
 
                     sprite.pos.x = static_cast<float>((chunkTileId % chunk.width) * tileset.tilew);
                     sprite.pos.y = static_cast<float>((chunkTileId / chunk.width) * tileset.tileh);
@@ -67,10 +67,14 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
 
     // instance the class object (if provided) and the eval tag
     if (auto iter = mapfile.properties.find("instance"); iter != mapfile.properties.end()) {
-        pyEval(iter->second);
+        if (!iter->second.empty()) {
+            pyEval(iter->second);
+        }
     }
     if (auto iter = mapfile.properties.find("eval"); iter != mapfile.properties.end()) {
-        pyEval(iter->second);
+        if (!iter->second.empty()) {
+            pyEval(iter->second);
+        }
     }
 
     return tilemaps.insert(map);
@@ -104,7 +108,7 @@ public:
             .def(py::init<>());
     }
 };
-PyType<PyTilemap> pytilemap;
+PyType<Tilemap, PyTilemap> pytilemap;
 
 class PyTilemapComponent {
 public:
@@ -116,4 +120,4 @@ public:
             .def("get", &TilemapComponent::get, py::return_value_policy::reference);
     }
 };
-PyType<PyTilemapComponent> pytilemapcomponent;
+PyType<TilemapComponent, PyTilemapComponent, ComponentWrapperBase, Tilemap> pytilemapcomponent;

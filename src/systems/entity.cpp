@@ -52,4 +52,4 @@ public:
         e.def("destroy", &Entity::destroy);
     }
 };
-PyType<PyEntity> entity;
+PyType<Entity, PyEntity, ComponentWrapperBase> entity;

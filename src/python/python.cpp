@@ -13,6 +13,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "python.h"
+#include "SDL.h"
+#include <functional>
+#include <map>
+#include <vector>
 
 PyClassList* PyClassList::list = nullptr;
 
@@ -35,10 +39,49 @@ void PyClassList::append(PyClassList* p)
     }
 }
 
-void PyClassList::initAll(py::module &m)
+void PyClassList::initAll(py::module& m)
 {
+    using funcType = std::function<void()>;
+    std::map<std::string, PyClassList*> loaders;
+    std::vector<std::string> loadedClasses;
+
+    // load classes into the map
     for (PyClassList* p = list; p != nullptr; p = p->next) {
-        p->initModule(m);
+        loaders[p->getName()] = p;
+    }
+
+    // recursivly load dependencies
+    std::function<void(std::pair<std::string, PyClassList*>)> recursiveLoad
+        = [&](std::pair<std::string, PyClassList*> pair) -> void {
+        // did already load this one
+        if (std::find(loadedClasses.begin(), loadedClasses.end(), pair.first) != loadedClasses.end()) {
+            return;
+        }
+        loadedClasses.push_back(pair.first);
+
+        for (auto&& depends : pair.second->getDependencies()) {
+            // dependency exsists, so load it
+            if (auto iter = loaders.find(depends); iter != loaders.end()) {
+                recursiveLoad(*iter);
+            } else {
+                SDL_Log("WARNING: Python type loading problem\n"
+                        "   Type '%s' depends on unknown type '%s'",
+                    pair.first.c_str(),
+                    depends.c_str());
+            }
+        }
+
+        // try loading in any case
+        try {
+            pair.second->initModule(m);
+        } catch (std::exception e) {
+            SDL_Log("Error during class loading for pybind11: %s", e.what());
+        }
+    };
+
+    // load them all
+    for (auto&& pair : loaders) {
+        recursiveLoad(pair);
     }
 }
 

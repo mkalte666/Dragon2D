@@ -18,7 +18,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
-#include <SDL.h>
+#include <typeinfo>
 
 namespace py = pybind11;
 
@@ -30,6 +30,8 @@ public:
 
 protected:
     virtual void initModule(py::module& m) = 0;
+    virtual std::string getName() const = 0;
+    virtual std::vector<std::string> getDependencies() const = 0;
 
 private:
     void append(PyClassList* p);
@@ -37,12 +39,24 @@ private:
     static PyClassList* list;
 };
 
-template <class T>
+template <class RealType, class WrapperType = typename RealType, class... Depends>
 class PyType : public PyClassList {
 protected:
+    virtual std::string getName() const override
+    {
+        return std::string(typeid(RealType).name());
+    }
+
+    virtual std::vector<std::string> getDependencies() const override
+    {
+        std::vector<std::string> result = { typeid(Depends).name()... };
+
+        return result;
+    }
+
     virtual void initModule(py::module& m) override
     {
-        T::initModule(m);
+        WrapperType::initModule(m);
     }
 };
 

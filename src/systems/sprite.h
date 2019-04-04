@@ -16,28 +16,24 @@
 #define _systems_sprite_h
 
 #include "systems/transform.h"
+#include "util/rect.h"
 #include <cstdint>
 
-struct SourceSlice {
-    glm::ivec2 src = glm::ivec2(0);
-    glm::ivec2 srcSize = glm::ivec2(0);
-};
-
 struct Sprite {
-    TransformSystem::IndexType transformId;
+    TransformSystem::IndexType transformId = TransformSystem::IndexType();
     glm::vec2 offset = glm::vec2(0);
-    SourceSlice source;
+    Rect source;
 };
 
 struct BatchSprite {
-    SourceSlice src;
+    Rect src;
     glm::vec2 pos;
     bool hFlip = false;
     bool vFlip = false;
 };
 
 struct SpriteBatch {
-    TransformSystem::IndexType transformId;
+    TransformSystem::IndexType transformId = TransformSystem::IndexType();
     std::vector<BatchSprite> batch;
 };
 

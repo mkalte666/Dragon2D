@@ -1,5 +1,5 @@
 /*
-    component.cpp: generic component wrapper
+    rect.h: rect implementation 
     Copyright (C) 2019 Malte Kieﬂling
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,15 +13,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "component.h"
-
 #include "python/python.h"
+#include "rect.h"
 
-class PyComponentBase
-{
+class PyRect {
 public:
-    static void initModule(py::module& m) {
-        py::class_<ComponentWrapperBase, ComponentWrapperBasePtr> c(m, "PyComponentBase");
+    static void initModule(py::module& m)
+    {
+        py::class_<Rect> c(m, "Rect");
+        c
+            .def(py::init<>())
+            .def_readwrite("x", &Rect::x)
+            .def_readwrite("y", &Rect::y)
+            .def_readwrite("w", &Rect::w)
+            .def_readwrite("h", &Rect::h);
     }
 };
-PyType<ComponentWrapperBase, PyComponentBase> pycomponentbase;
+PyType<Rect, PyRect> pyrect;
