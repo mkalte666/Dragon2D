@@ -35,7 +35,7 @@ Input& InputSystem::get(const IndexType& i)
 void InputSystem::remove(const IndexType& i)
 {
     inputs.remove(i);
-}d
+}
 
 void InputSystem::processEvent(const SDL_Event& e)
 {
