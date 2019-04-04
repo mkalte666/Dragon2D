@@ -15,8 +15,8 @@
 #include "sprite.h"
 
 #include "runtime/window.h"
-#include "util/slotmap.h"
 #include "systems/camera.h"
+#include "util/slotmap.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glm/glm.hpp>
@@ -218,7 +218,7 @@ SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::In
 
 SpriteBatch& SpriteSystem::getBatch(const BatchIndexType& i)
 {
-    auto& index = data->lookup[i];
+    auto& index = data->lookupBatch[i];
     auto& layer = data->layers[index.layer];
     auto& spriteLayer = layer.find(index.texture);
     auto& batch = spriteLayer->second->batches.find(index.entry);
@@ -288,14 +288,22 @@ void SpriteSystem::update(double dt)
     SDL_RenderGetViewport(Window::renderer, &fullViewport);
     // for each camera
     for (auto&& camera : CameraSystem::instance->getCameras()) {
+        SDL_Rect viewport;
         if (!camera.fillTarget) {
-            SDL_Rect viewport = { camera.viewport.x, camera.viewport.y, camera.viewport.w, camera.viewport.h };
-            SDL_RenderSetViewport(Window::renderer, &viewport);
+            viewport = { camera.viewport.x, camera.viewport.y, camera.viewport.w, camera.viewport.h };
         } else {
-            SDL_RenderSetViewport(Window::renderer, &fullViewport);
+            viewport = fullViewport;
+        }
+        SDL_RenderSetViewport(Window::renderer, &viewport);
+        glm::vec2 cameraOffset = TransformSystem::instance->get(camera.transformId).position + camera.offset;
+        Rect cameraWorldRect(glm::ivec2(cameraOffset), glm::ivec2(viewport.w, viewport.h));
+
+        // centerd camera?
+        if (camera.ceneterd) {
+            cameraOffset -= glm::vec2(cameraWorldRect.size())*0.5f;
+            cameraWorldRect -= glm::ivec2(glm::vec2(cameraWorldRect.size()) * 0.5f);
         }
 
-		const auto& cameraOffset = TransformSystem::instance->get(camera.transformId).position + camera.offset;
         // for each layer
         for (auto&& layer : data->layers) {
             // for each type of texture
@@ -310,6 +318,14 @@ void SpriteSystem::update(double dt)
                 // render batches
                 for (auto&& batch : texture.second->batches) {
                     const auto& transform = TransformSystem::instance->get(batch.transformId);
+                    // naive view frustim culling
+                    if (batch.boundary.w > 0 || batch.boundary.h > 0) {
+                        auto brect = batch.boundary;
+                        brect += glm::ivec2(transform.position);
+                        if (!cameraWorldRect.intersect(brect)) {
+                            continue;
+                        }
+                    }
                     for (auto&& single : batch.batch) {
                         drawOne(cameraOffset, tex, transform, single.pos, single.src, single.hFlip, single.vFlip);
                     }
@@ -317,15 +333,12 @@ void SpriteSystem::update(double dt)
             }
         }
 
-		if (!camera.fillTarget) {
-            
+        if (!camera.fillTarget) {
         }
     }
 
-	SDL_RenderSetViewport(Window::renderer, &fullViewport);
+    SDL_RenderSetViewport(Window::renderer, &fullViewport);
     glm::vec2 cameraOffset = glm::vec2(0.0);
-
-    
 }
 
 class PySprite {

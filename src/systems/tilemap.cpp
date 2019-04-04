@@ -56,9 +56,17 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
                     sprite.hFlip = tile.hFlip;
                     sprite.vFlip = tile.vFlip;
 
+
                     batch.push_back(std::move(sprite));
                 }
-                map.batches.push_back(SpriteSystem::instance->createBatch(transformId, tileset.imageFilename, zLayerId, batch));
+                auto batchId = SpriteSystem::instance->createBatch(transformId, tileset.imageFilename, zLayerId, batch);
+                // bounding rect of the chunk
+                Rect boundary;
+                boundary.w = chunk.width * tileset.tilew;
+                boundary.h = chunk.height * tileset.tileh;
+                boundary += glm::ivec2(chunkOffset);
+                SpriteSystem::instance->getBatch(batchId).boundary = boundary;
+                map.batches.push_back(batchId);
             }
         }
     }

@@ -22,6 +22,7 @@
 struct Camera {
     TransformSystem::IndexType transformId = TransformSystem::IndexType();
     glm::vec2 offset = glm::vec2(0.0);
+    bool ceneterd = true;
     bool fillTarget = true;
     Rect viewport = Rect();
 };
@@ -33,8 +34,8 @@ public:
     CameraSystem();
     ~CameraSystem();
 
-    IndexType create(const TransformComponent& transformComponent, bool fillTarget = true, const Rect& viewport = Rect());
-    IndexType create(const TransformSystem::IndexType& transformId, bool fillTarget = true, const Rect& viewport = Rect());
+    IndexType create(const TransformComponent& transformComponent, bool centered = true, bool fillTarget = true, const Rect& viewport = Rect());
+    IndexType create(const TransformSystem::IndexType& transformId, bool centered = true, bool fillTarget = true, const Rect& viewport = Rect());
     Camera& get(const IndexType& i);
     void remove(const IndexType& i);
 

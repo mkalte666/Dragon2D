@@ -13,14 +13,14 @@ class TestCamera(d2d.Entity):
     def __init__(self):
         d2d.Entity.__init__(self)
         pos = d2d.TransformComponent()
-        camera = d2d.CameraComponent(pos)
+        camera = d2d.CameraComponent(pos, True)
         self.addComponent(pos)
         self.addComponent(camera)
         d2d.entityManager.addEntity(self)
 
 e = d2d.Entity()
 pos = d2d.TransformComponent()
-pos.get().position = d2d.glm.vec2(200,200)
+#pos.get().position = d2d.glm.vec2(200,200)
 map = d2d.TilemapComponent(pos, d2d.Filename.gameFile("maps/test.tmx"))
 e.addComponent(pos)
 e.addComponent(map)

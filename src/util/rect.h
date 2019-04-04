@@ -46,7 +46,7 @@ struct GenericRect {
         : x(pos.x)
         , y(pos.y)
         , w(size.x)
-        , h(size.h)
+        , h(size.y)
     {
     }
 
@@ -58,6 +58,57 @@ struct GenericRect {
     VecType size() const
     {
         return VecType(w, h);
+    }
+
+    ValueType left() const
+    {
+        return x;
+    }
+
+    ValueType right() const
+    {
+        return x + w;
+    }
+
+    ValueType top() const
+    {
+        return y;
+    }
+
+    ValueType bottom() const
+    {
+        return y + h;
+    }
+
+    bool intersect(const GenericRect& other) const
+    {
+        return !(left() > other.right() || right() < other.left() || top() > other.bottom() || bottom() < other.top());
+    }
+
+    GenericRect& operator+=(const VecType& other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    friend GenericRect operator+(GenericRect rect, const VecType& other)
+    {
+        rect += other;
+        return *this;
+    }
+
+    GenericRect& operator-=(const VecType& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+    friend GenericRect operator-(GenericRect rect, const VecType& other)
+    {
+        rect -= other;
+        return *this;
     }
 
     ValueType x = 0;

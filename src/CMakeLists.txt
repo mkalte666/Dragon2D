@@ -43,6 +43,11 @@ set(d2dSources
     ${systemSources}
     ${utilSources})
 
+# does this work?
+if (WIN32)
+	list(APPEND utilSources util/slotmap.natvis)
+endif(WIN32)
+
 add_executable(d2d ${d2dSources})
 target_include_directories(d2d PRIVATE ${CMAKE_PROJECT_DIR}/src/)
 target_link_libraries(d2d PRIVATE SDL2::SDL2 SDL2::SDL2main SDL2::SDL2_IMAGE tinyxml2 imgui pybind11::embed glm)

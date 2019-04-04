@@ -70,11 +70,13 @@ public:
             : free(false)
             , generation(0)
             , data()
+            , ptr(reinterpret_cast<T*>(&data))
         {
         }
         bool free;
         uint32_t generation;
         typename std::aligned_storage<sizeof(T), alignof(T)>::type data;
+        T* ptr;
     };
     struct Chunk {
         std::array<StorageType, baseSize> data;

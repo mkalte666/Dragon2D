@@ -34,6 +34,7 @@ struct BatchSprite {
 
 struct SpriteBatch {
     TransformSystem::IndexType transformId = TransformSystem::IndexType();
+    Rect boundary;
     std::vector<BatchSprite> batch;
 };
 

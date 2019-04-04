@@ -25,15 +25,16 @@ CameraSystem::~CameraSystem()
 {
 }
 
-CameraSystem::IndexType CameraSystem::create(const TransformComponent& transformComponent, bool fillTarget, const Rect& viewport)
+CameraSystem::IndexType CameraSystem::create(const TransformComponent& transformComponent, bool centered, bool fillTarget, const Rect& viewport)
 {
-    return create(transformComponent.getIndex(), fillTarget, viewport);
+    return create(transformComponent.getIndex(), centered, fillTarget, viewport);
 }
 
-CameraSystem::IndexType CameraSystem::create(const TransformSystem::IndexType& transformId, bool fillTarget, const Rect& viewport)
+CameraSystem::IndexType CameraSystem::create(const TransformSystem::IndexType& transformId, bool centered, bool fillTarget, const Rect& viewport)
 {
     Camera c;
     c.transformId = transformId;
+    c.ceneterd = centered;
     c.fillTarget = fillTarget;
     c.viewport = viewport;
     return cameras.insert(std::move(c));
@@ -62,6 +63,7 @@ public:
         c
             .def(py::init<>())
             .def_readwrite("offset", &Camera::offset)
+            .def_readwrite("centered", &Camera::ceneterd)
             .def_readwrite("fillTarget", &Camera::fillTarget)
             .def_readwrite("viewport", &Camera::viewport);
     }
@@ -75,8 +77,9 @@ public:
         py::class_<CameraComponent, CameraComponent::Ptr, ComponentWrapperBase> c(m, "CameraComponent");
         c
             .def(py::init<const TransformComponent&>())
-            .def(py::init<const TransformComponent&, bool, const Rect&>())
+            .def(py::init<const TransformComponent&, bool>())
+            .def(py::init<const TransformComponent&, bool, bool, const Rect&>())
             .def("get", &CameraComponent::get, py::return_value_policy::reference);
     }
 };
-PyType<CameraComponent, PyCameraComponent, ComponentWrapperBase> pycameracomponent;
+PyType<CameraComponent, PyCameraComponent, ComponentWrapperBase, Camera> pycameracomponent;
