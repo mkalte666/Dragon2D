@@ -41,25 +41,28 @@ void PyClassList::append(PyClassList* p)
 
 void PyClassList::initAll(py::module& m)
 {
-    using funcType = std::function<void()>;
-    std::map<std::string, PyClassList*> loaders;
-    std::vector<std::string> loadedClasses;
+    struct MapEntry {
+        PyClassList* entry;
+        bool loaded = false;
+    };
+    using LoaderMap = std::map<std::string, MapEntry>;
+    LoaderMap loaders;
 
     // load classes into the map
     for (PyClassList* p = list; p != nullptr; p = p->next) {
-        loaders[p->getName()] = p;
+        loaders[p->getName()] = { p, false };
     }
 
     // recursivly load dependencies
-    std::function<void(std::pair<std::string, PyClassList*>)> recursiveLoad
-        = [&](std::pair<std::string, PyClassList*> pair) -> void {
+    std::function<void(LoaderMap::value_type&)> recursiveLoad
+        = [&](LoaderMap::value_type& pair) -> void {
         // did already load this one
-        if (std::find(loadedClasses.begin(), loadedClasses.end(), pair.first) != loadedClasses.end()) {
+        if (pair.second.loaded) {
             return;
         }
-        loadedClasses.push_back(pair.first);
+        pair.second.loaded = true;
 
-        for (auto&& depends : pair.second->getDependencies()) {
+        for (auto&& depends : pair.second.entry->getDependencies()) {
             // dependency exsists, so load it
             if (auto iter = loaders.find(depends); iter != loaders.end()) {
                 recursiveLoad(*iter);
@@ -73,7 +76,7 @@ void PyClassList::initAll(py::module& m)
 
         // try loading in any case
         try {
-            pair.second->initModule(m);
+            pair.second.entry->initModule(m);
         } catch (std::exception e) {
             SDL_Log("Error during class loading for pybind11: %s", e.what());
         }
