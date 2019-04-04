@@ -19,6 +19,8 @@ set(systemSources
     systems/entitymanager.h
     systems/init.cpp
     systems/init.h
+	systems/input.cpp
+	systems/input.h
     systems/component.cpp
     systems/component.h
     systems/sprite.cpp

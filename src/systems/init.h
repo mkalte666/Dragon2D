@@ -15,8 +15,14 @@
 #ifndef _system_init_h
 #define _system_init_h
 
+#include <SDL.h>
+
 void initSystems();
+void finishSystemsEarly();
+
 void finishSystems();
+void processEvent(const SDL_Event& event);
+
 void updateSystems(double dt);
 
 #endif //_system_init_h

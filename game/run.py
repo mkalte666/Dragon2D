@@ -18,6 +18,18 @@ class TestCamera(d2d.Entity):
         self.addComponent(camera)
         d2d.entityManager.addEntity(self)
 
+
+class EventTester(d2d.Entity):
+    def __init__(self):
+        d2d.Entity.__init__(self)
+        inp = d2d.InputComponent("keydown", self.callback)
+        inp2 = d2d.InputComponent("keyup", self.callback)
+        self.addComponent(inp)
+        self.addComponent(inp2)
+        d2d.entityManager.addEntity(self)
+    def callback(self, name, value):
+        print("Got event " + str(name) + " of value " + str(value))
+
 e = d2d.Entity()
 pos = d2d.TransformComponent()
 #pos.get().position = d2d.glm.vec2(200,200)
@@ -26,3 +38,4 @@ e.addComponent(pos)
 e.addComponent(map)
 d2d.entityManager.addEntity(e)
 TestCamera()
+EventTester()

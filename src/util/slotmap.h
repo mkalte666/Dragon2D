@@ -327,6 +327,21 @@ public:
         freelist.push_back(iter.getRawIndex());
     }
 
+    void clear()
+    {
+        for (auto&& chunk : data) {
+            for (size_t i = 0; i < chunk->size; i++) {
+                auto& elem = chunk->data[i];
+                if (!elem.free) {
+                    reinterpret_cast<T*>(&elem.data)->~T();
+                }
+            }
+        }
+
+        data.clear();
+        data.emplace_back(new Chunk());
+    }
+
 protected:
     iterator allocateTag()
     {

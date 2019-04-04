@@ -15,6 +15,7 @@
 #include "systems/init.h"
 #include "systems/camera.h"
 #include "systems/entitymanager.h"
+#include "systems/input.h"
 #include "systems/sprite.h"
 #include "systems/tilemap.h"
 #include "systems/transform.h"
@@ -29,10 +30,19 @@ void initSystems()
 
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance = std::make_shared<EntityManager>();
+
+    // and this one might hold some entity callbacks
+    InputSystem::instance = std::make_shared<InputSystem>();
+}
+
+void finishSystemsEarly()
+{
+    // first to go because callbacks into python
+    InputSystem::instance->earlyCleanup();
 }
 
 void finishSystems()
-{
+{   
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance.reset();
 
@@ -41,10 +51,20 @@ void finishSystems()
     SpriteSystem::instance.reset();
     CameraSystem::instance.reset();
     TransformSystem::instance.reset();
+
+    // everything might have callbacks -> last
+    // callbacks should (*prays*) not hold any references to anything else
+    InputSystem::instance.reset();
+}
+
+void processEvent(const SDL_Event& event)
+{
+    InputSystem::instance->processEvent(event);
 }
 
 void updateSystems(double dt)
 {
+    InputSystem::instance->update(dt);
     EntityManager::instance->update(dt);
     SpriteSystem::instance->update(dt);
     TilemapSystem::instance->update(dt);

@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
             SDL_Event e;
             while (SDL_PollEvent(&e)) {
                 ImGui_ImplSDL2_ProcessEvent(&e);
-
+                processEvent(e);
                 if (e.type == SDL_QUIT) {
                     running = false;
                 }
@@ -197,6 +197,7 @@ int main(int argc, char* argv[])
         }
 
         // cleanup 
+        finishSystemsEarly();
         pybind11::finalize_interpreter();
         finishSystems();
 
