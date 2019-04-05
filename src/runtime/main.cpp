@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
         }
 
         uint64_t now = SDL_GetPerformanceCounter();
-        uint64_t last = 0;
+        uint64_t last = now;
         while (running) {
             // poll events
             SDL_Event e;

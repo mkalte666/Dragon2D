@@ -19,6 +19,7 @@
 #include "systems/sprite.h"
 #include "systems/tilemap.h"
 #include "systems/transform.h"
+#include "systems/simplephysics.h"
 
 void initSystems()
 {
@@ -27,6 +28,7 @@ void initSystems()
     CameraSystem::instance = std::make_shared<CameraSystem>();
     SpriteSystem::instance = std::make_shared<SpriteSystem>();
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
+    SimplePhysicsSystem::instance = std::make_shared<SimplePhysicsSystem>();
 
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance = std::make_shared<EntityManager>();
@@ -47,6 +49,7 @@ void finishSystems()
     EntityManager::instance.reset();
 
     // now the rest
+    SimplePhysicsSystem::instance.reset();
     TilemapSystem::instance.reset();
     SpriteSystem::instance.reset();
     CameraSystem::instance.reset();
@@ -66,6 +69,7 @@ void updateSystems(double dt)
 {
     InputSystem::instance->update(dt);
     EntityManager::instance->update(dt);
+    SimplePhysicsSystem::instance->update(dt);
     SpriteSystem::instance->update(dt);
     TilemapSystem::instance->update(dt);
 }

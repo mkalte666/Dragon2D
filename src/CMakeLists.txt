@@ -23,6 +23,8 @@ set(systemSources
 	systems/input.h
     systems/component.cpp
     systems/component.h
+	systems/simplephysics.cpp
+	systems/simplephysics.h
     systems/sprite.cpp
     systems/sprite.h
     systems/tilemap.cpp
