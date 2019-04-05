@@ -34,6 +34,7 @@ set(utilSources
 	util/rect.cpp
 	util/rect.h
     util/slotmap.h
+	util/xmlhelpers.h
     util/tiled/tmx.cpp
     util/tiled/tmx.h
     util/tiled/tsx.cpp

@@ -1,0 +1,12 @@
+<inputs>
+  <input name="up" param="1" event="keydown" eventparam="w"/>
+  <input name="up" param="0" event="keyup" eventparam="w" />
+  <input name="down" param="1" event="keydown" eventparam="s"/>
+  <input name="down" param="0" event="keyup" eventparam="s" />
+  <input name="left" param="1" event="keydown" eventparam="a"/>
+  <input name="left" param="0" event="keyup" eventparam="a" />
+  <input name="right" param="1" event="keydown" eventparam="d"/>
+  <input name="right" param="0" event="keyup" eventparam="d" />
+  <input name="axisx" param="inherit" event="mousex" />
+  <input name="axisy" param="inherit" event="mousey" />
+</inputs>

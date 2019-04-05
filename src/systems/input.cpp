@@ -15,9 +15,65 @@
 #include "input.h"
 
 #include <pybind11/functional.h>
+#include <tinyxml2.h>
+namespace xml = tinyxml2;
 #include <imgui.h>
 
+#include "runtime/filename.h"
+#include "util/xmlhelpers.h"
+
 std::shared_ptr<InputSystem> InputSystem::instance(nullptr);
+
+InputSystem::InputSystem()
+{
+    //SDL_assert(0 == SDL_SetRelativeMouseMode(SDL_TRUE));
+
+    xml::XMLDocument doc;
+    auto loadResult = doc.LoadFile(Filename::gameFile("inputs.xml").c_str());
+    if (loadResult != xml::XML_SUCCESS) {
+        SDL_Log("Cannot load input config!");
+        return;
+    }
+
+    auto inputs = doc.FirstChildElement("inputs");
+    if (!inputs) {
+        return;
+    }
+
+    for (auto inputTag = inputs->FirstChildElement("input"); inputTag; inputTag = inputTag->NextSiblingElement("input")) {
+        std::string newName = nullAwareAttr(inputTag->Attribute("name"));
+        std::string eventName = nullAwareAttr(inputTag->Attribute("event"));
+        std::string paramStr = nullAwareAttr(inputTag->Attribute("param"));
+        std::string eventParamStr = nullAwareAttr(inputTag->Attribute("eventparam"));
+        std::string rawParam = nullAwareAttr(inputTag->Attribute("rawparam"));
+
+        if (newName.empty() || eventName.empty() || paramStr.empty()) {
+            SDL_Log("Inputs must have both 'name', 'event' and 'param' set!");
+            continue;
+        }
+
+        if (paramStr != "inherit" && eventParamStr.empty()) {
+            SDL_Log("Inputs that do not inherit the base event parameters must have 'eventparam' set");
+            continue;
+        }
+
+        XmlInput input;
+        input.name = newName;
+        input.inherit = paramStr == "inherit";
+        if (!input.inherit) {
+            input.newParam = std::stoi(paramStr);
+
+            if (rawParam != "0" && rawParam != "true") {
+                input.origParam = static_cast<int>(SDL_GetKeyFromName(eventParamStr.c_str()));
+            } else {
+                // fire and pray
+                input.origParam = std::stoi(eventParamStr);
+            }
+        }
+
+        loadedInputs.insert(std::make_pair(eventName, input));
+    }
+}
 
 InputSystem::IndexType InputSystem::create(const std::string& name, const InputFunction& callback)
 {
@@ -50,27 +106,78 @@ void InputSystem::processEvent(const SDL_Event& e)
 
     std::vector<EventInfo> processedEvents;
 
-    // generate basic events
+    // generate basic event
+    std::vector<EventInfo> baseEvents;
+
     switch (e.type) {
     case SDL_KEYDOWN: {
         if (e.key.repeat) {
             break;
         }
-        EventInfo i;
-        i.name = "keydown";
-        i.param = static_cast<int64_t>(e.key.keysym.scancode);
-        processedEvents.push_back(i);
+        EventInfo baseEvent;
+        baseEvent.name = "keydown";
+        baseEvent.param = static_cast<int64_t>(e.key.keysym.sym);
+        baseEvents.push_back(baseEvent);
         break;
     }
     case SDL_KEYUP: {
-        EventInfo i;
-        i.name = "keyup";
-        i.param = static_cast<int64_t>(e.key.keysym.scancode);
-        processedEvents.push_back(i);
+        EventInfo baseEvent;
+        baseEvent.name = "keyup";
+        baseEvent.param = static_cast<int64_t>(e.key.keysym.sym);
+        baseEvents.push_back(baseEvent);
         break;
+    }
+    case SDL_MOUSEMOTION: {
+        if (e.motion.xrel != 0) {
+            EventInfo baseEvent;
+            baseEvent.name = "mousex";
+            baseEvent.param = e.motion.xrel;
+            baseEvents.push_back(baseEvent);
+        }
+        if (e.motion.yrel != 0) {
+            EventInfo baseEvent;
+            baseEvent.name = "mousey";
+            baseEvent.param = e.motion.yrel;
+            baseEvents.push_back(baseEvent);
+        }
+        break;
+    }
+    case SDL_MOUSEBUTTONDOWN: {
+        EventInfo baseEvent;
+        baseEvent.name = "mousedown";
+        baseEvent.param = static_cast<int64_t>(e.button.button);
+        baseEvents.push_back(baseEvent);
+    }
+    case SDL_MOUSEBUTTONUP: {
+        EventInfo baseEvent;
+        baseEvent.name = "mouseup";
+        baseEvent.param = static_cast<int64_t>(e.button.button);
+        baseEvents.push_back(baseEvent);
     }
     default:
         break; // dont care
+    }
+
+    
+
+    // check our own nice special type of events
+    for (auto&& baseEvent : baseEvents) {
+        processedEvents.push_back(baseEvent);
+        auto relevantLoadedInputs = loadedInputs.equal_range(baseEvent.name);
+        // for each own input type corresponing to the base one
+        for (auto iter = relevantLoadedInputs.first; iter != relevantLoadedInputs.second; ++iter) {
+            // do we inherit or are we what is marked with the second param?
+            if (iter->second.inherit || baseEvent.param == iter->second.origParam) {
+                EventInfo childEvent;
+                childEvent.name = iter->second.name;
+                childEvent.param = iter->second.newParam;
+                // inherit means same param as base event
+                if (iter->second.inherit) {
+                    childEvent.param = baseEvent.param;
+                }
+                processedEvents.push_back(childEvent);
+            }
+        }
     }
 
     // call all relevant event handlers

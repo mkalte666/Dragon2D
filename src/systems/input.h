@@ -30,6 +30,7 @@ struct Input {
 
 class InputSystem {
 public:
+    InputSystem();
     using ComponentType = Input;
     using IndexType = SlotMapIndex;
 
@@ -46,7 +47,15 @@ public:
     static std::shared_ptr<InputSystem> instance;
 
 private:
+    struct XmlInput {
+        std::string name = "";
+        bool inherit = false;
+        int origParam = 0;
+        int newParam = 0;
+    };
+
     SlotMap<Input> inputs;
+    std::multimap<std::string, XmlInput> loadedInputs;
 };
 
 using InputComponent = ComponentWrapper<InputSystem>;
