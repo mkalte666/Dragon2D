@@ -4,30 +4,35 @@ import d2d;
 class TestPlayer(d2d.Entity):
     def __init__(self):
         d2d.Entity.__init__(self)
-        pos = d2d.TransformComponent()
-        camera = d2d.CameraComponent(pos, True)
-        self.physics = d2d.SimplePhysicsComponent(pos)
-        self.addComponent(pos)
-        self.addComponent(camera)
+        self.pos = d2d.TransformComponent()
+        self.camera = d2d.CameraComponent(self.pos, True)
+        self.sprite = d2d.SpriteComponent(self.pos, d2d.Filename.gameFile("textures/test32.png"), 4)
+        self.physics = d2d.SimplePhysicsComponent(self.pos)
+        self.addComponent(self.pos)
+        self.addComponent(self.camera)
+        self.addComponent(self.sprite)
+        self.addComponent(self.physics)
         self.addComponent(d2d.InputComponent("up", self.movement))
         self.addComponent(d2d.InputComponent("down", self.movement))
         self.addComponent(d2d.InputComponent("left", self.movement))
         self.addComponent(d2d.InputComponent("right", self.movement))
         self.addComponent(d2d.InputComponent("somemouse", self.movement))
         d2d.entityManager.addEntity(self)
+        self.speed = 100
     def movement(self, eventName, param):
-        x = 0
+        print(eventName + " - " + str(param))
+        x = -self.speed
         if param == 1:
-            x = 50
+            x = self.speed
         if eventName == "up":
-            self.physics.get().velocity.y = -x
+            self.physics.get().velocity.y += -x
         if eventName == "down":
-            self.physics.get().velocity.y = x
+            self.physics.get().velocity.y += x
         if eventName == "left":
-            self.physics.get().velocity.x = -x
+            self.physics.get().velocity.x += -x
         if eventName == "right":
-            self.physics.get().velocity.x = x
-
+            self.physics.get().velocity.x += x
+        
 
 # possible way to load a map
 e = d2d.Entity()

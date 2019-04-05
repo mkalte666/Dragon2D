@@ -267,10 +267,10 @@ inline void drawOne(
     srcRect.h = source.h;
 
     SDL_FRect dstRect;
-    dstRect.x = transform.position.x + offset.x - camera.x;
-    dstRect.y = transform.position.y + offset.y - camera.y;
-    dstRect.w = transform.scale.x * static_cast<float>(srcRect.w);
-    dstRect.h = transform.scale.y * static_cast<float>(srcRect.h);
+    dstRect.x = roundf(transform.position.x + offset.x - camera.x);
+    dstRect.y = roundf(transform.position.y + offset.y - camera.y);
+    dstRect.w = roundf(transform.scale.x * static_cast<float>(srcRect.w));
+    dstRect.h = roundf(transform.scale.y * static_cast<float>(srcRect.h));
 
     SDL_RenderCopyExF(
         Window::renderer,
