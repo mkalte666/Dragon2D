@@ -214,18 +214,12 @@ public:
     {
         freelist.reserve(baseSize);
         data.emplace_back(new Chunk());
+        currentChunk = 0;
     }
 
     ~SlotMap()
     {
-        for (auto&& chunk : data) {
-            for (size_t i = 0; i < chunk->size; i++) {
-                auto& elem = chunk->data[i];
-                if (!elem.free) {
-                    reinterpret_cast<T*>(&elem.data)->~T();
-                }
-            }
-        }
+        clear();
 
         data.clear();
     }
@@ -242,15 +236,13 @@ public:
 
     iterator end() const
     {
-        auto lastChunk = data.size() - 1;
-        return iterator(&data, static_cast<uint32_t>(lastChunk * baseSize + data.back()->size), 1);
+        return iterator(&data, static_cast<uint32_t>(currentChunk * baseSize + data[currentChunk]->size), 1);
     }
 
     iterator rbegin() const
     {
-        auto lastChunk = data.size() - 1;
 
-        iterator iter(&data, lastChunk * baseSize + data.back()->size, -1);
+        iterator iter(&data, currentChunk * baseSize + data[currentChunk]->size, -1);
         if (iter.getTag().free) {
             iter++; // automatically goes to first free or end()
         }
@@ -276,8 +268,7 @@ public:
 
     iterator find(const IndexType& index) const
     {
-        auto lastChunkIndex = data.size() - 1;
-        if (index.index >= lastChunkIndex * baseSize + data.back()->size) {
+        if (index.index >= currentChunk * baseSize + data[currentChunk]->size) {
             return end();
         }
 
@@ -336,10 +327,12 @@ public:
                     reinterpret_cast<T*>(&elem.data)->~T();
                 }
             }
+            // simple set size to 0
+            chunk->size = 0;
         }
 
-        data.clear();
-        data.emplace_back(new Chunk());
+        freelist.clear();
+        freelist.reserve(baseSize);
     }
 
 protected:
@@ -353,14 +346,17 @@ protected:
         }
 
         // chunk full?
-        if (data.back()->size >= baseSize) {
+        if (data[currentChunk]->size >= baseSize) {
             data.emplace_back(new Chunk());
+            ++currentChunk;
         }
 
+        auto& chunk = data[currentChunk];
+
         // return new tag
-        auto& tag = data.back()->data[data.back()->size];
-        iterator iter(&data, static_cast<uint32_t>((data.size() - 1) * baseSize + data.back()->size));
-        ++data.back()->size;
+        auto& tag = chunk->data[chunk->size];
+        iterator iter(&data, static_cast<uint32_t>((data.size() - 1) * baseSize + chunk->size));
+        ++data[currentChunk]->size;
         // placement new the data tag
         new (&tag) StorageType();
 
@@ -369,6 +365,7 @@ protected:
 
 private:
     ChunkArray data;
+    size_t currentChunk;
     FreeList freelist;
 };
 
