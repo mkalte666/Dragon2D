@@ -22,6 +22,7 @@
 struct Collider {
     TransformSystem::IndexType transformId = TransformSystem::IndexType();
     FRect aabb = FRect();
+    uint64_t mask = 0;
 };
 
 struct CollisionSystemData;
@@ -33,8 +34,8 @@ public:
     
     CollisionSystem();
     ~CollisionSystem();
-    IndexType create(const TransformComponent& transform, const FRect& aabb);
-    IndexType create(const TransformSystem::IndexType& transformId, const FRect& aabb);
+    IndexType create(const TransformComponent& transform, const FRect& aabb, uint64_t mask = 0);
+    IndexType create(const TransformSystem::IndexType& transformId, const FRect& aabb, uint64_t mask = 0);
     Collider& get(const IndexType& i);
     void remove(const IndexType& i);
 

@@ -23,6 +23,9 @@ public:
         py::class_<Rect> c(m, "Rect");
         c
             .def(py::init<>())
+            .def(py::init<Rect::ValueType, Rect::ValueType>())
+            .def(py::init<Rect::ValueType, Rect::ValueType, Rect::ValueType, Rect::ValueType>())
+            .def(py::init<const Rect::VecType&, const Rect::VecType&>())
             .def_readwrite("x", &Rect::x)
             .def_readwrite("y", &Rect::y)
             .def_readwrite("w", &Rect::w)
@@ -38,6 +41,9 @@ public:
         py::class_<FRect> c(m, "FRect");
         c
             .def(py::init<>())
+            .def(py::init<FRect::ValueType, FRect::ValueType>())
+            .def(py::init<FRect::ValueType, FRect::ValueType, FRect::ValueType, FRect::ValueType>())
+            .def(py::init<const FRect::VecType&, const FRect::VecType&>())
             .def_readwrite("x", &FRect::x)
             .def_readwrite("y", &FRect::y)
             .def_readwrite("w", &FRect::w)
@@ -53,6 +59,9 @@ public:
         py::class_<DRect> c(m, "DRect");
         c
             .def(py::init<>())
+            .def(py::init<DRect::ValueType, DRect::ValueType>())
+            .def(py::init<DRect::ValueType, DRect::ValueType, DRect::ValueType, DRect::ValueType>())
+            .def(py::init<const DRect::VecType&, const DRect::VecType&>())
             .def_readwrite("x", &DRect::x)
             .def_readwrite("y", &DRect::y)
             .def_readwrite("w", &DRect::w)

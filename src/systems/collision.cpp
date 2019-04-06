@@ -20,6 +20,7 @@ public:
     {
         py::class_<Collider> c(m, "Collider");
         c.def_readwrite("aabb", &Collider::aabb);
+        c.def_readwrite("mask", &Collider::mask);
     }
 };
 PyType<Collider, PyCollider, FRect> pycollider;
@@ -108,16 +109,17 @@ CollisionSystem::~CollisionSystem()
     data.reset();
 }
 
-CollisionSystem::IndexType CollisionSystem::create(const TransformComponent& transform, const FRect& aabb)
+CollisionSystem::IndexType CollisionSystem::create(const TransformComponent& transform, const FRect& aabb, uint64_t mask)
 {
     return create(transform.getIndex(), aabb);
 }
 
-CollisionSystem::IndexType CollisionSystem::create(const TransformSystem::IndexType& transformId, const FRect& aabb)
+CollisionSystem::IndexType CollisionSystem::create(const TransformSystem::IndexType& transformId, const FRect& aabb, uint64_t mask)
 {
     Collider c;
     c.transformId = transformId;
     c.aabb = aabb;
+    c.mask = mask;
     auto index = data->colliders.insert(c);
     return index;
 }
@@ -162,6 +164,10 @@ bool CollisionSystem::checkCollision(const IndexType& i)
                 continue;
             }
             const auto& other = *otherIter;
+            // check mask and maybe continue before we fetch the other transform
+            if (c.mask && other.mask && !(c.mask & other.mask)) {
+                continue;
+            }
             const auto& otherTransformedAabb = other.aabb + TransformSystem::instance->get(other.transformId).position;
             if (transformedAabb.intersect(otherTransformedAabb)) {
                 return true;
@@ -179,6 +185,7 @@ public:
         py::class_<CollisionComponent, CollisionComponent::Ptr, ComponentWrapperBase> c(m, "CollisionComponent");
         c
             .def(py::init<const TransformComponent&, const FRect&>())
+            .def(py::init<const TransformComponent&, const FRect&, uint64_t>())
             .def("get", &CollisionComponent::get, py::return_value_policy::reference);
     }
 };

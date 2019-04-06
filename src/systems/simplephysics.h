@@ -20,8 +20,8 @@
 #include "collision.h"
 
 struct SimplePhysicsObject {
-    TransformSystem::IndexType transformId;
-    CollisionSystem::IndexType colliderId;
+    TransformSystem::IndexType transformId = TransformSystem::IndexType();
+    CollisionSystem::IndexType colliderId = CollisionSystem::IndexType();
     bool collision = false;
     glm::vec2 velocity = glm::vec2(0.0f);
     glm::vec2 acceleration = glm::vec2(0.0f);

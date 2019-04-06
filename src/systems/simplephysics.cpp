@@ -14,6 +14,7 @@
 */
 
 #include "simplephysics.h"
+#include <glm/glm.hpp>
 
 std::shared_ptr<SimplePhysicsSystem> SimplePhysicsSystem::instance(nullptr);
 
@@ -68,7 +69,52 @@ void SimplePhysicsSystem::update(double dt)
             bool colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
             // :(
             if (colliding) {
-                transform.position = lastPosition;
+                // find the rough point of collision
+                glm::vec2 processedNewPosition = lastPosition;
+                glm::vec2 dist = lastPosition - newPosition;
+                // step back through the collision
+                glm::vec2 postCollisionVelocity = glm::length(dist)*glm::normalize(lastVelocity);
+                for (int steps = static_cast<int>(glm::length(dist)); colliding && steps > 0; --steps) {
+                    postCollisionVelocity = glm::normalize(lastVelocity) * static_cast<float>(steps);
+                    processedNewPosition = lastPosition + lastVelocity * static_cast<float>(dt);
+                    transform.position = processedNewPosition;
+                    // check if we are still colliding
+                    colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
+                }
+                // failsafe
+                if (colliding) {
+                    processedNewPosition = lastPosition;
+                }
+                // not colliding anymore
+                if (glm::length(lastVelocity-postCollisionVelocity) > 0.1) {
+                    // try single axis movement for x
+                    postCollisionVelocity = lastVelocity - postCollisionVelocity;
+                    float tmp = postCollisionVelocity.y;
+                    postCollisionVelocity.y = 0.0f;
+                    glm::vec2 xAxisPos = processedNewPosition + postCollisionVelocity * static_cast<float>(dt);
+                    transform.position = xAxisPos;
+                    colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
+                    if (colliding) {
+                        // try y axis movement
+                        postCollisionVelocity.y = tmp;
+                        postCollisionVelocity.x = 0.0f;
+                        glm::vec2 yAxisPos = processedNewPosition + postCollisionVelocity * static_cast<float>(dt);
+                        transform.position = xAxisPos;
+                        colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
+                        if (colliding) {
+                            // rip any movememnt
+                            postCollisionVelocity.x = 0.0f;
+                        } else {
+                            processedNewPosition = yAxisPos;
+                        }
+                    } else {
+                        // x movement worked
+                        processedNewPosition = xAxisPos;
+                    }
+                }
+
+                transform.position = processedNewPosition;
+                obj.velocity = postCollisionVelocity + obj.acceleration * static_cast<float>(dt);
             }
         }
     }

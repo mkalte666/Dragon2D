@@ -27,17 +27,17 @@ class TestPlayer(d2d.Entity):
         self.speed = 100
     def movement(self, eventName, param):
         print(eventName + " - " + str(param))
-        x = -self.speed
+        x = 0
         if param == 1:
             x = self.speed
         if eventName == "up":
-            self.physics.get().velocity.y += -x
+            self.physics.get().velocity.y = -x
         if eventName == "down":
-            self.physics.get().velocity.y += x
+            self.physics.get().velocity.y = x
         if eventName == "left":
-            self.physics.get().velocity.x += -x
+            self.physics.get().velocity.x = -x
         if eventName == "right":
-            self.physics.get().velocity.x += x
+            self.physics.get().velocity.x = x
         
 
 # possible way to load a map
