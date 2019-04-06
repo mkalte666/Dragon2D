@@ -22,10 +22,17 @@ SimplePhysicsSystem::IndexType SimplePhysicsSystem::create(const TransformCompon
     return create(transform.getIndex());
 }
 
-SimplePhysicsSystem::IndexType SimplePhysicsSystem::create(const TransformSystem::IndexType& transformId)
+SimplePhysicsSystem::IndexType SimplePhysicsSystem::create(const TransformComponent& transform, const CollisionComponent& collider)
+{
+    return create(transform.getIndex(), collider.getIndex(), true);
+}
+
+SimplePhysicsSystem::IndexType SimplePhysicsSystem::create(const TransformSystem::IndexType& transformId, CollisionSystem::IndexType& colliderId, bool collision)
 {
     SimplePhysicsObject obj;
     obj.transformId = transformId;
+    obj.colliderId = colliderId;
+    obj.collision = collision;
     return objects.insert(obj);
 }
 
@@ -42,13 +49,28 @@ void SimplePhysicsSystem::remove(const IndexType& i)
 void SimplePhysicsSystem::update(double dt)
 {
     for (auto&& obj : objects) {
-        // simple velocity 
         auto& transform = TransformSystem::instance->get(obj.transformId);
+        glm::vec2 lastPosition = transform.position;
+        glm::vec2 newPosition = lastPosition;
+        glm::vec2 lastVelocity = obj.velocity;
+        glm::vec2 newVelocity = lastVelocity;
         auto actualAcceleration = obj.gravity + obj.acceleration;
-        transform.position += obj.velocity * static_cast<float>(dt);
-        //transform.position += actualAcceleration * static_cast<float>(dt * dt * 0.5);
-        
-        obj.velocity = obj.velocity + obj.acceleration * static_cast<float>(dt);
+        bool wasColliding = !obj.collision || CollisionSystem::instance->checkCollision(obj.colliderId);
+
+        newPosition += obj.velocity * static_cast<float>(dt);
+        newVelocity = obj.velocity + obj.acceleration * static_cast<float>(dt);
+
+        transform.position = newPosition;
+        obj.velocity = newVelocity;
+
+        if (!wasColliding) {
+            // check for collision now
+            bool colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
+            // :(
+            if (colliding) {
+                transform.position = lastPosition;
+            }
+        }
     }
 }
 
@@ -73,8 +95,9 @@ public:
         py::class_<SimplePhysicsComponent, SimplePhysicsComponent::Ptr, ComponentWrapperBase> c(m, "SimplePhysicsComponent");
         c
             .def(py::init<const TransformComponent&>())
+            .def(py::init<const TransformComponent&, const CollisionComponent&>())
             .def("get", &SimplePhysicsComponent::get, py::return_value_policy::reference);
     }
 };
-PyType<SimplePhysicsComponent, PySimplePhysicsComponent, SimplePhysicsObject> pysimplephysicscomponent;
+PyType<SimplePhysicsComponent, PySimplePhysicsComponent, SimplePhysicsObject, CollisionComponent> pysimplephysicscomponent;
 

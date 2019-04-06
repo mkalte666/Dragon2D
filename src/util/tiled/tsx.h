@@ -17,6 +17,8 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include "util/rect.h"
 
 class Tsx {
 public:
@@ -33,6 +35,7 @@ public:
     std::string name = "";
     std::string imageFilename ="";
     uint32_t firstgid = 0;
+    std::multimap<int, FRect> colliders;
 };
 
 #endif //_util_tiled_tsx_h

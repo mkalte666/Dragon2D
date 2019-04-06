@@ -14,12 +14,13 @@
 */
 #include "systems/init.h"
 #include "systems/camera.h"
+#include "systems/collision.h"
 #include "systems/entitymanager.h"
 #include "systems/input.h"
+#include "systems/simplephysics.h"
 #include "systems/sprite.h"
 #include "systems/tilemap.h"
 #include "systems/transform.h"
-#include "systems/simplephysics.h"
 
 void initSystems()
 {
@@ -28,6 +29,7 @@ void initSystems()
     CameraSystem::instance = std::make_shared<CameraSystem>();
     SpriteSystem::instance = std::make_shared<SpriteSystem>();
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
+    CollisionSystem::instance = std::make_shared<CollisionSystem>();
     SimplePhysicsSystem::instance = std::make_shared<SimplePhysicsSystem>();
 
     // this thing can hold references to all the others, so destroy first and init last
@@ -44,12 +46,13 @@ void finishSystemsEarly()
 }
 
 void finishSystems()
-{   
+{
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance.reset();
 
     // now the rest
     SimplePhysicsSystem::instance.reset();
+    CollisionSystem::instance.reset();
     TilemapSystem::instance.reset();
     SpriteSystem::instance.reset();
     CameraSystem::instance.reset();
@@ -68,6 +71,7 @@ void processEvent(const SDL_Event& event)
 void updateSystems(double dt)
 {
     InputSystem::instance->update(dt);
+    CollisionSystem::instance->update(dt);
     EntityManager::instance->update(dt);
     SimplePhysicsSystem::instance->update(dt);
     SpriteSystem::instance->update(dt);

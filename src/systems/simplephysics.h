@@ -17,9 +17,12 @@
 
 #include "component.h"
 #include "transform.h"
+#include "collision.h"
 
 struct SimplePhysicsObject {
     TransformSystem::IndexType transformId;
+    CollisionSystem::IndexType colliderId;
+    bool collision = false;
     glm::vec2 velocity = glm::vec2(0.0f);
     glm::vec2 acceleration = glm::vec2(0.0f);
     glm::vec2 gravity = glm::vec2(0.0f);
@@ -31,7 +34,8 @@ public:
     using IndexType = SlotMapIndex;
 
     IndexType create(const TransformComponent& transform);
-    IndexType create(const TransformSystem::IndexType& transformId);
+    IndexType create(const TransformComponent& transform, const CollisionComponent& collider);
+    IndexType create(const TransformSystem::IndexType& transformId, CollisionSystem::IndexType& colliderId = CollisionSystem::IndexType(), bool collision = false);
     SimplePhysicsObject& get(const IndexType& i);
     void remove(const IndexType& i);
 

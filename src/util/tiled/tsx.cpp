@@ -30,7 +30,6 @@ Tsx::Tsx(const std::string& filename)
         return;
     }
 
-
     auto tileset = doc.FirstChildElement("tileset");
     if (tileset == nullptr) {
         return;
@@ -52,4 +51,25 @@ Tsx::Tsx(const std::string& filename)
     // used for paths relative from the filename
     auto basepath = filename.substr(0, filename.find_last_of("/\\"));
     imageFilename = basepath + "/" + image->Attribute("source");
+
+    // tile collision
+    for (auto tileTag = tileset->FirstChildElement("tile"); tileTag; tileTag = tileTag->NextSiblingElement("tile")) {
+        int tileId = tileTag->IntAttribute("id", -1);
+        auto handleObject = [&](xml::XMLElement* objParentTag) {
+            if (!objParentTag) {
+                return;
+            }
+            for (auto objTag = objParentTag->FirstChildElement("object"); objTag; objTag = objTag->NextSiblingElement("object")) {
+                FRect rect;
+                rect.x = objTag->FloatAttribute("x", 0.0f);
+                rect.y = objTag->FloatAttribute("y", 0.0f);
+                rect.w = objTag->FloatAttribute("width", 0.0f);
+                rect.h = objTag->FloatAttribute("height", 0.0f);
+                colliders.insert(std::make_pair(tileId, rect));
+            }
+        };
+
+        handleObject(tileTag->FirstChildElement("objectgroup"));
+        handleObject(tileTag);
+    }
 }

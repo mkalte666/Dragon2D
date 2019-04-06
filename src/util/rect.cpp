@@ -30,3 +30,33 @@ public:
     }
 };
 PyType<Rect, PyRect> pyrect;
+
+class PyFRect {
+public:
+    static void initModule(py::module& m)
+    {
+        py::class_<FRect> c(m, "FRect");
+        c
+            .def(py::init<>())
+            .def_readwrite("x", &FRect::x)
+            .def_readwrite("y", &FRect::y)
+            .def_readwrite("w", &FRect::w)
+            .def_readwrite("h", &FRect::h);
+    }
+};
+PyType<FRect, PyFRect> pyfrect;
+
+class PyDRect {
+public:
+    static void initModule(py::module& m)
+    {
+        py::class_<DRect> c(m, "DRect");
+        c
+            .def(py::init<>())
+            .def_readwrite("x", &DRect::x)
+            .def_readwrite("y", &DRect::y)
+            .def_readwrite("w", &DRect::w)
+            .def_readwrite("h", &DRect::h);
+    }
+};
+PyType<DRect, PyDRect> pyrdect;

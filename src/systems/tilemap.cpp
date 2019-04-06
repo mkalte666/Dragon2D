@@ -56,6 +56,15 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
                     sprite.hFlip = tile.hFlip;
                     sprite.vFlip = tile.vFlip;
 
+                    // check for colliders in the tileset
+                    auto colliderRange = tileset.colliders.equal_range(tile.id);
+                    for (auto colliderIter = colliderRange.first; colliderIter != colliderRange.second; ++colliderIter) {
+                        FRect rect = colliderIter->second;
+                        // move rect to tile position
+                        rect += sprite.pos;
+                        // create collider
+                        map.colliders.push_back(CollisionSystem::instance->create(transformId, rect));
+                    }
 
                     batch.push_back(std::move(sprite));
                 }
@@ -98,6 +107,9 @@ void TilemapSystem::remove(const IndexType& i)
     if (auto iter = tilemaps.find(i); iter != tilemaps.end()) {
         for (auto&& batch : iter->batches) {
             SpriteSystem::instance->removeBatch(batch);
+        }
+        for (auto&& collider : iter->colliders) {
+            CollisionSystem::instance->remove(collider);
         }
     }
     tilemaps.remove(i);

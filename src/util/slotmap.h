@@ -331,8 +331,22 @@ public:
             chunk->size = 0;
         }
 
+        currentChunk = 0;
         freelist.clear();
         freelist.reserve(baseSize);
+    }
+
+    // Clear, but does NOT CALL ELEMENT DESTRUCTORS
+    // Only use for plain old data where you dont care
+    // And really want a *fast* clear
+    void fastClear()
+    {
+        for (auto&& chunk : data) {
+            chunk->size = 0;
+        }
+
+        currentChunk = 0;
+        freelist.clear();
     }
 
 protected:

@@ -13,6 +13,8 @@ set(pythonSources
 set(systemSources 
 	systems/camera.cpp
 	systems/camera.h
+	systems/collision.cpp
+	systems/collision.h
     systems/entity.cpp
     systems/entity.h
     systems/entitymanager.cpp

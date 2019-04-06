@@ -80,6 +80,22 @@ struct GenericRect {
         return y + h;
     }
 
+    VecType topLeft() const {
+        return VecType(left(), top());
+    }
+
+    VecType topRight() const {
+        return VecType(right(), top());
+    }
+
+    VecType bottomLeft() const {
+        return VecType(left(), bottom());
+    }
+
+    VecType bottomRight() const {
+        return VecType(right(), bottom());
+    }
+
     bool intersect(const GenericRect& other) const
     {
         return !(left() > other.right() || right() < other.left() || top() > other.bottom() || bottom() < other.top());
@@ -95,7 +111,7 @@ struct GenericRect {
     friend GenericRect operator+(GenericRect rect, const VecType& other)
     {
         rect += other;
-        return *this;
+        return rect;
     }
 
     GenericRect& operator-=(const VecType& other)

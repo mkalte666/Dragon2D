@@ -49,6 +49,7 @@ public:
 
 private:
     SlotMap<Transform2D> positions;
+    Transform2D defaultTransform;
 };
 
 using TransformComponent = ComponentWrapper<TransformSystem>;

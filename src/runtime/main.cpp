@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
         double deltaTime = 0.01;
 
         try {
-            pybind11::eval_file(Filename::gameFile("run.py").c_str());
+            (void)pybind11::eval_file(Filename::gameFile("run.py").c_str());
         } catch (std::exception e) {
             std::cerr << e.what() << std::endl;
         }

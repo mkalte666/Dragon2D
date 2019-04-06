@@ -7,7 +7,13 @@ class TestPlayer(d2d.Entity):
         self.pos = d2d.TransformComponent()
         self.camera = d2d.CameraComponent(self.pos, True)
         self.sprite = d2d.SpriteComponent(self.pos, d2d.Filename.gameFile("textures/test32.png"), 4)
-        self.physics = d2d.SimplePhysicsComponent(self.pos)
+        collisionRect = d2d.FRect()
+        collisionRect.x = 0
+        collisionRect.y = 16
+        collisionRect.w = 32
+        collisionRect.h = 16
+        self.collision = d2d.CollisionComponent(self.pos,collisionRect)
+        self.physics = d2d.SimplePhysicsComponent(self.pos, self.collision)
         self.addComponent(self.pos)
         self.addComponent(self.camera)
         self.addComponent(self.sprite)
@@ -42,6 +48,4 @@ e.addComponent(pos)
 e.addComponent(map)
 d2d.entityManager.addEntity(e)
 
-# instance the player
-player = TestPlayer()
 

@@ -60,7 +60,12 @@ void TransformSystem::remove(const IndexType& index)
 
 Transform2D& TransformSystem::get(const IndexType& index)
 {
-    return positions[index];
+    if (auto iter = positions.find(index); iter != positions.end()) {
+        return *iter;
+    }
+
+    defaultTransform = Transform2D();
+    return defaultTransform;
 }
 
 class PyTransformComponent {
