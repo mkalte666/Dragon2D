@@ -62,4 +62,9 @@ protected:
 
 void pyEval(const std::string& p);
 
+class Python {
+public:
+    static pybind11::module runModule;
+};
+
 #endif //_d2d_python_h

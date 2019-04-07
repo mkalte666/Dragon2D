@@ -59,7 +59,7 @@ void SimplePhysicsSystem::update(double dt)
         bool wasColliding = !obj.collision || CollisionSystem::instance->checkCollision(obj.colliderId);
 
         newPosition += obj.velocity * static_cast<float>(dt);
-        newVelocity = obj.velocity + obj.acceleration * static_cast<float>(dt);
+        newVelocity = obj.velocity + actualAcceleration * static_cast<float>(dt);
 
         transform.position = newPosition;
         obj.velocity = newVelocity;

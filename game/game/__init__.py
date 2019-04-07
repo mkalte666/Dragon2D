@@ -41,11 +41,12 @@ class TestPlayer(d2d.Entity):
         
 
 # possible way to load a map
-e = d2d.Entity()
-pos = d2d.TransformComponent()
-map = d2d.TilemapComponent(pos, d2d.Filename.gameFile("maps/test.tmx"))
-e.addComponent(pos)
-e.addComponent(map)
-d2d.entityManager.addEntity(e)
+def run():
+    e = d2d.Entity()
+    pos = d2d.TransformComponent()
+    map = d2d.TilemapComponent(pos, d2d.Filename.gameFile("maps/test.tmx"))
+    e.addComponent(pos)
+    e.addComponent(map)
+    d2d.entityManager.addEntity(e)
 
 

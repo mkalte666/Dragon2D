@@ -19,6 +19,8 @@
 #include <vector>
 
 PyClassList* PyClassList::list = nullptr;
+pybind11::module Python::runModule;
+
 
 PyClassList::PyClassList()
     : next(nullptr)

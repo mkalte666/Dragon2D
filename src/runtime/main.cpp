@@ -28,6 +28,7 @@
 // clang-format on
 
 #include <pybind11/embed.h>
+#include "python/python.h"
 #include "runtime/filename.h"
 #include "runtime/window.h"
 #include "systems/init.h"
@@ -143,7 +144,11 @@ int main(int argc, char* argv[])
         double deltaTime = 0.01;
 
         try {
-            (void)pybind11::eval_file(Filename::gameFile("run.py").c_str());
+            auto sys = pybind11::module::import("sys");
+            sys.attr("path").attr("insert")(0, Filename::gamePath);
+            Python::runModule = pybind11::module::import("game");
+            Python::runModule.attr("run")();
+            //(void)pybind11::eval_file(Filename::gameFile("run.py").c_str());
         } catch (std::exception e) {
             std::cerr << e.what() << std::endl;
         }
@@ -198,6 +203,7 @@ int main(int argc, char* argv[])
 
         // cleanup 
         finishSystemsEarly();
+        Python::runModule.dec_ref();
         pybind11::finalize_interpreter();
         finishSystems();
 

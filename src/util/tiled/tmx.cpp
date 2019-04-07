@@ -14,6 +14,7 @@
 */
 #include "tmx.h"
 
+#include "util/xmlhelpers.h"
 #include <algorithm>
 #include <sstream>
 #include <tinyxml2.h>
@@ -23,6 +24,23 @@ namespace xml = tinyxml2;
 const unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
 const unsigned FLIPPED_VERTICALLY_FLAG = 0x40000000;
 const unsigned FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+
+void extractProperties(Tmx::PropertyMap& target, xml::XMLElement* parent)
+{
+    auto propertiesTag = parent->FirstChildElement("properties");
+    if (!propertiesTag) {
+        return;
+    }
+
+    for (
+        auto propertyTag = propertiesTag->FirstChildElement("property");
+        propertyTag;
+        propertyTag = propertyTag->NextSiblingElement("property")) {
+        std::string name = nullAwareAttr(propertyTag->Attribute("name"));
+        std::string value = nullAwareAttr(propertyTag->Attribute("value"));
+        target[name] = value;
+    }
+}
 
 Tmx::Tmx(const std::string& filename)
 {
@@ -41,11 +59,7 @@ Tmx::Tmx(const std::string& filename)
     }
 
     // load the properties
-    if (auto propertiesTag = map->FirstChildElement("properties"); propertiesTag) {
-        for (auto propertyTag = propertiesTag->FirstChildElement("property"); propertyTag; propertyTag = propertyTag->NextSiblingElement("property")) {
-            properties[propertyTag->Attribute("name")] = propertyTag->Attribute("value");
-        }
-    }
+    extractProperties(properties, map);
 
     // fetch and load all tilesets
     for (auto tset = map->FirstChildElement("tileset"); tset; tset = tset->NextSiblingElement("tileset")) {
@@ -74,6 +88,9 @@ Tmx::Tmx(const std::string& filename)
         layer.offsetx = layerTag->IntAttribute("offsetx", 0);
         layer.offsety = layerTag->IntAttribute("offsety", 0);
 
+        // properties first
+        extractProperties(layer.properties, layerTag);
+
         auto dataTag = layerTag->FirstChildElement("data");
         if (!dataTag) {
             break;
@@ -94,6 +111,34 @@ Tmx::Tmx(const std::string& filename)
         }
 
         layers.push_back(std::move(layer));
+    }
+
+    // go go go, objects next
+    for (
+        auto objLayerTag = map->FirstChildElement("objectgroup");
+        objLayerTag;
+        objLayerTag = objLayerTag->NextSiblingElement("objectgroup")) {
+        // load properties
+        ObjectLayer layer;
+        extractProperties(layer.properties, objLayerTag);
+        for (
+            auto objTag = objLayerTag->FirstChildElement("object");
+            objTag;
+            objTag = objTag->NextSiblingElement("object")) {
+            Object o;
+            o.name = nullAwareAttr(objTag->Attribute("name"));
+            o.type = nullAwareAttr(objTag->Attribute("type"));
+            o.x = objTag->IntAttribute("x", 0);
+            o.y = objTag->IntAttribute("y", 0);
+            o.width = objTag->IntAttribute("width", 0);
+            o.height = objTag->IntAttribute("height", 0);
+            o.rotation = objTag->FloatAttribute("rotation", 0.0f);
+            o.visible = objTag->BoolAttribute("visible", true);
+            extractProperties(o.properties, objTag);
+
+            layer.objects.push_back(o);
+        }
+        objectLayers.push_back(std::move(layer));
     }
 }
 

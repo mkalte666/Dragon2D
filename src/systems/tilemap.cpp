@@ -14,6 +14,7 @@
 */
 #include "tilemap.h"
 
+#include "SDL.h"
 #include "util/tiled/tmx.h"
 
 std::shared_ptr<TilemapSystem> TilemapSystem::instance(nullptr);
@@ -31,6 +32,11 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
     for (int layerId = 0; layerId < mapfile.layers.size(); layerId++) {
         uint8_t zLayerId = static_cast<uint8_t>(layerId);
         auto& layer = mapfile.layers[layerId];
+        // layer might bring a z index
+        if (auto iter = layer.properties.find("z"); iter != layer.properties.end()) {
+            zLayerId = static_cast<uint8_t>(std::stoi(iter->second));
+        }
+
         for (int tilesetId = 0; tilesetId < mapfile.tilesets.size(); tilesetId++) {
             auto& tileset = mapfile.tilesets[tilesetId];
             for (auto& chunk : layer.chunks[tilesetId]) {
@@ -81,6 +87,28 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
     }
 
     // TODO: objects
+    for (auto&& objLayer : mapfile.objectLayers) {
+        glm::vec2 offset = glm::vec2(objLayer.offsetx, objLayer.offsety);
+        for (auto&& obj : objLayer.objects) {
+            try {
+                if (obj.type.empty()) {
+                    continue;
+                }
+
+                FRect rect(
+                    static_cast<float>(obj.x),
+                    static_cast<float>(obj.y),
+                    static_cast<float>(obj.width),
+                    static_cast<float>(obj.height));
+                rect += offset;
+                py::object classname = Python::runModule.attr(obj.type.c_str());
+                classname(obj.name, rect);
+                
+            } catch (std::exception e) {
+                SDL_Log("Error during creation of object %s - %s", obj.name.c_str(), e.what());
+            }
+        }
+    }
 
     // instance the class object (if provided) and the eval tag
     if (auto iter = mapfile.properties.find("instance"); iter != mapfile.properties.end()) {

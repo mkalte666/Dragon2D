@@ -21,6 +21,7 @@
 
 class Tmx {
 public:
+    using PropertyMap = std::map<std::string, std::string>;
     struct Tile {
         uint32_t id = 0;
         bool hFlip = false;
@@ -35,7 +36,7 @@ public:
     };
     struct Layer {
         int id = 0; ///< the unique id of the layer.
-        std::string name; ///< the name of the layer
+        std::string name = ""; ///< the name of the layer
         int x = 0; ///< layer x coordinate in tiles
         int y = 0; ///< layer y coordinate in tiles
         int width = 0; ///< layer width in tiles. Same as map size for fixed-size maps
@@ -45,12 +46,37 @@ public:
         int offsetx = 0; ///< x offset of the layer in pixels
         int offsety = 0; ///<i y offset of the layer in pixels
         std::unordered_map<int, std::vector<Chunk>> chunks; ///< chunks of the map, orderd by tileset id
+        PropertyMap properties; ///< properties of this layer
+    };
+    struct Object {
+        std::string name;
+        std::string type;
+        int x = 0; ///< x coordinate of this object in pixels
+        int y = 0; ///< y coordinate of this object in pixels 
+        int width = 0; ///< width of this object in pixels
+        int height = 0; ///< height of this object in pixels 
+        float rotation = 0; ///< rotation of this object, in degrees 
+        uint32_t gid = 0; ///< optional gid
+        bool visible = true; ///< if the object is visible
+        PropertyMap properties; ///< properties of this object
+    };
+
+    struct ObjectLayer {
+        int id = 0; ///< id of the object layer
+        std::string name = ""; ///< name of the object layer
+        float opacity = 0; ///< opacity of the object layer
+        bool visible = true; ///< if the object layer is visible
+        int offsetx = 0; ///< x offset of objects in this group
+        int offsety = 0; ///< y offset of objects in this group
+        std::vector<Object> objects;
+        PropertyMap properties;
     };
     Tmx(const std::string& filename);
 
     std::vector<Tsx> tilesets;
     std::vector<Layer> layers;
-    std::map<std::string, std::string> properties;
+    std::vector<ObjectLayer> objectLayers;
+    PropertyMap properties;
 
 private:
     void decode(Layer& layer, const std::string& data);
