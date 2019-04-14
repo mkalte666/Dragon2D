@@ -46,10 +46,17 @@ set(utilSources
     util/tiled/tsx.cpp
     util/tiled/tsx.h)
 
+set(editorSources 
+	editors/filedialog.cpp
+	editors/filedialog.h
+	editors/overlay.cpp 
+	editors/overlay.h)
+
 set(d2dSources 
     ${runtimeSources}
     ${pythonSources}
     ${systemSources}
+	${editorSources}
     ${utilSources})
 
 # does this work?

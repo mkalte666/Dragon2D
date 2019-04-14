@@ -48,6 +48,10 @@ if (WIN32)
 add_definitions(-DNOMINMAX)
 endif(WIN32)
 
+# windows we want the cplusplus macro and /MP
+if (WIN32)
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /MP /Zc:__cplusplus")
+endif(WIN32)
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_IMAGE REQUIRED)

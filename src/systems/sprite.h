@@ -69,6 +69,9 @@ public:
 
     void update(double dt);
 
+    void* getSpriteTextureData(IndexType i);
+    void* getBatchTextureData(BatchIndexType i);
+
     static std::shared_ptr<SpriteSystem> instance;
 
 private:

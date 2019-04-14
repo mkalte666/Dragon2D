@@ -19,6 +19,7 @@
 #include "util/slotmap.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include <GL/gl3w.h>
 #include <glm/glm.hpp>
 
 class TextureWrapper {
@@ -34,6 +35,11 @@ public:
             SDL_Log("Cannot create Texture Wrapper %s", SDL_GetError());
         }
 
+        // extract the texture id without crying too much about sdl internals
+        SDL_GL_BindTexture(tex, nullptr, nullptr);
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&textureId));
+        SDL_GL_UnbindTexture(tex);
+
         SDL_FreeSurface(surface);
     }
 
@@ -41,6 +47,7 @@ public:
     {
         tex = other.tex;
         other.tex = nullptr;
+        textureId = other.textureId;
     }
 
     TextureWrapper(const TextureWrapper& other) = delete;
@@ -54,7 +61,14 @@ public:
         tex = nullptr;
     }
 
+    // for imgui and whatever
+    void* getRawTextureData() {
+
+        return reinterpret_cast<void*>(textureId);
+    }
+
     SDL_Texture* tex = nullptr;
+    GLuint textureId = 0;
     int refcount = 0;
 };
 
@@ -339,6 +353,26 @@ void SpriteSystem::update(double dt)
 
     SDL_RenderSetViewport(Window::renderer, &fullViewport);
     glm::vec2 cameraOffset = glm::vec2(0.0);
+}
+
+void* SpriteSystem::getSpriteTextureData(IndexType i)
+{
+    auto& index = data->lookup[i];
+    auto textureIter = data->textures.find(index.texture);
+    if (textureIter != data->textures.end()) {
+        return textureIter->getRawTextureData();
+    }
+    return nullptr;
+}
+
+void* SpriteSystem::getBatchTextureData(BatchIndexType i)
+{
+    auto& index = data->lookup[i];
+    auto textureIter = data->textures.find(index.texture);
+    if (textureIter != data->textures.end()) {
+        return textureIter->getRawTextureData();
+    }
+    return nullptr;
 }
 
 class PySprite {

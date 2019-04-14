@@ -29,6 +29,7 @@
 
 #include <pybind11/embed.h>
 #include "python/python.h"
+#include "editors/overlay.h"
 #include "runtime/filename.h"
 #include "runtime/window.h"
 #include "systems/init.h"
@@ -153,6 +154,9 @@ int main(int argc, char* argv[])
             std::cerr << e.what() << std::endl;
         }
 
+        // debugging/editor overlay
+        Overlay overlay;
+
         uint64_t now = SDL_GetPerformanceCounter();
         uint64_t last = now;
         while (running) {
@@ -180,6 +184,7 @@ int main(int argc, char* argv[])
             ImGui::NewFrame();
 
             // now do the system updates
+            overlay.update(deltaTime);
             updateSystems(deltaTime);
 
             // this flushes the renderer. after this only imgui
