@@ -46,7 +46,7 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
                 for (int chunkTileId = 0; chunkTileId < chunk.tiles.size(); chunkTileId++) {
                     auto& tile = chunk.tiles[chunkTileId];
 
-                    if (tile.id == 0) {
+                    if (tile.empty) {
                         continue;
                     }
                     BatchSprite sprite;

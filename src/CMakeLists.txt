@@ -29,6 +29,8 @@ set(systemSources
 	systems/simplephysics.h
     systems/sprite.cpp
     systems/sprite.h
+	systems/tick.cpp
+	systems/tick.h
     systems/tilemap.cpp
     systems/tilemap.h
     systems/transform.cpp

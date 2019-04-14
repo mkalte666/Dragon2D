@@ -166,6 +166,7 @@ void Tmx::decode(Layer& layer, const std::string& data)
             t.hFlip = flippedHorizontally;
             t.vFlip = flippedVertically;
             t.id = gid - tilesets[i].firstgid;
+            t.empty = false;
             tiles.push_back(t);
         }
     }

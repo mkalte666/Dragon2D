@@ -184,7 +184,12 @@ void InputSystem::processEvent(const SDL_Event& e)
     for (auto&& event : processedEvents) {
         for (auto&& input : inputs) {
             if (input.name == event.name) {
-                input.callback(event.name, event.param);
+                try {
+
+                    input.callback(event.name, event.param);
+                } catch (std::exception e) {
+                    SDL_Log("Exception in Callback for Input %s: %s", input.name.c_str(), e.what());
+                }
             }
         }
     }

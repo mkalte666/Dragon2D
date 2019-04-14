@@ -26,6 +26,7 @@ struct SimplePhysicsObject {
     glm::vec2 velocity = glm::vec2(0.0f);
     glm::vec2 acceleration = glm::vec2(0.0f);
     glm::vec2 gravity = glm::vec2(0.0f);
+    glm::vec2 maxVelocity = glm::vec2(0.0f);
 };
 
 class SimplePhysicsSystem {

@@ -73,7 +73,7 @@ void SimplePhysicsSystem::update(double dt)
                 glm::vec2 processedNewPosition = lastPosition;
                 glm::vec2 dist = lastPosition - newPosition;
                 // step back through the collision
-                glm::vec2 postCollisionVelocity = glm::length(dist)*glm::normalize(lastVelocity);
+                glm::vec2 postCollisionVelocity = glm::length(dist) * glm::normalize(lastVelocity);
                 for (int steps = static_cast<int>(glm::length(dist)); colliding && steps > 0; --steps) {
                     postCollisionVelocity = glm::normalize(lastVelocity) * static_cast<float>(steps);
                     processedNewPosition = lastPosition + lastVelocity * static_cast<float>(dt);
@@ -86,7 +86,7 @@ void SimplePhysicsSystem::update(double dt)
                     processedNewPosition = lastPosition;
                 }
                 // not colliding anymore
-                if (glm::length(lastVelocity-postCollisionVelocity) > 0.1) {
+                if (glm::length(lastVelocity - postCollisionVelocity) > 0.1) {
                     // try single axis movement for x
                     postCollisionVelocity = lastVelocity - postCollisionVelocity;
                     float tmp = postCollisionVelocity.y;
@@ -99,7 +99,7 @@ void SimplePhysicsSystem::update(double dt)
                         postCollisionVelocity.y = tmp;
                         postCollisionVelocity.x = 0.0f;
                         glm::vec2 yAxisPos = processedNewPosition + postCollisionVelocity * static_cast<float>(dt);
-                        transform.position = xAxisPos;
+                        transform.position = yAxisPos;
                         colliding = CollisionSystem::instance->checkCollision(obj.colliderId);
                         if (colliding) {
                             // rip any movememnt
@@ -117,9 +117,14 @@ void SimplePhysicsSystem::update(double dt)
                 obj.velocity = postCollisionVelocity + obj.acceleration * static_cast<float>(dt);
             }
         }
+        if (obj.maxVelocity.x > 0.0f && obj.maxVelocity.x < glm::abs(obj.velocity.x)) {
+            obj.velocity.x = obj.maxVelocity.x * ((0.0f < obj.velocity.x) - (obj.velocity.x < 0.0f));
+        }
+        if (obj.maxVelocity.y > 0.0f && obj.maxVelocity.y < glm::abs(obj.velocity.y)) {
+            obj.velocity.y = obj.maxVelocity.y * ((0.0f < obj.velocity.y) - (obj.velocity.y < 0.0f));
+        }
     }
 }
-
 
 class PySimplePhysicsObject {
 public:
@@ -129,7 +134,8 @@ public:
         c
             .def_readwrite("velocity", &SimplePhysicsObject::velocity)
             .def_readwrite("acceleration", &SimplePhysicsObject::acceleration)
-            .def_readwrite("gravity", &SimplePhysicsObject::gravity);
+            .def_readwrite("gravity", &SimplePhysicsObject::gravity)
+            .def_readwrite("maxVelocity", &SimplePhysicsObject::maxVelocity);
     }
 };
 PyType<SimplePhysicsObject, PySimplePhysicsObject, glm::vec2> pysimplephysicsobject;
@@ -146,4 +152,3 @@ public:
     }
 };
 PyType<SimplePhysicsComponent, PySimplePhysicsComponent, SimplePhysicsObject, CollisionComponent> pysimplephysicscomponent;
-

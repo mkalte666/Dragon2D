@@ -19,6 +19,7 @@
 #include "systems/input.h"
 #include "systems/simplephysics.h"
 #include "systems/sprite.h"
+#include "systems/tick.h"
 #include "systems/tilemap.h"
 #include "systems/transform.h"
 
@@ -31,18 +32,20 @@ void initSystems()
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
     CollisionSystem::instance = std::make_shared<CollisionSystem>();
     SimplePhysicsSystem::instance = std::make_shared<SimplePhysicsSystem>();
-
+    
     // this thing can hold references to all the others, so destroy first and init last
     EntityManager::instance = std::make_shared<EntityManager>();
 
-    // and this one might hold some entity callbacks
+    // and these ones might hold some entity callbacks
     InputSystem::instance = std::make_shared<InputSystem>();
+    TickSystem::instance = std::make_shared<TickSystem>();
 }
 
 void finishSystemsEarly()
 {
     // first to go because callbacks into python
     InputSystem::instance->earlyCleanup();
+    TickSystem::instance->earlyCleanup();
 }
 
 void finishSystems()
@@ -61,6 +64,7 @@ void finishSystems()
     // everything might have callbacks -> last
     // callbacks should (*prays*) not hold any references to anything else
     InputSystem::instance.reset();
+    TickSystem::instance.reset();
 }
 
 void processEvent(const SDL_Event& event)
@@ -74,6 +78,7 @@ void updateSystems(double dt)
     CollisionSystem::instance->update(dt);
     EntityManager::instance->update(dt);
     SimplePhysicsSystem::instance->update(dt);
+    TickSystem::instance->update(dt);
     SpriteSystem::instance->update(dt);
     TilemapSystem::instance->update(dt);
 }

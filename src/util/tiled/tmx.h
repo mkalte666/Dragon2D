@@ -26,6 +26,7 @@ public:
         uint32_t id = 0;
         bool hFlip = false;
         bool vFlip = false;
+        bool empty = true;
     };
     struct Chunk {
         int x = 0;
