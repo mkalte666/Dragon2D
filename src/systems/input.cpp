@@ -27,7 +27,11 @@ std::shared_ptr<InputSystem> InputSystem::instance(nullptr);
 InputSystem::InputSystem()
 {
     //SDL_assert(0 == SDL_SetRelativeMouseMode(SDL_TRUE));
+    load();
+}
 
+void InputSystem::load()
+{
     xml::XMLDocument doc;
     auto loadResult = doc.LoadFile(Filename::gameFile("inputs.xml").c_str());
     if (loadResult != xml::XML_SUCCESS) {
@@ -63,16 +67,47 @@ InputSystem::InputSystem()
         if (!input.inherit) {
             input.newParam = std::stoi(paramStr);
 
-            if (rawParam != "0" && rawParam != "true") {
+            if (rawParam == "0" || rawParam != "true") {
                 input.origParam = static_cast<int>(SDL_GetKeyFromName(eventParamStr.c_str()));
             } else {
                 // fire and pray
                 input.origParam = std::stoi(eventParamStr);
+                input.rawParam = true;
             }
         }
 
         loadedInputs.insert(std::make_pair(eventName, input));
     }
+}
+
+void InputSystem::save()
+{
+    xml::XMLDocument doc;
+    auto inputs = doc.NewElement("inputs");
+    for (auto&& inputPair : loadedInputs) {
+        auto inputTag = doc.NewElement("input");
+        inputTag->SetAttribute("name", inputPair.second.name.c_str());
+        inputTag->SetAttribute("event", inputPair.first.c_str());
+        if (inputPair.second.inherit) {
+            inputTag->SetAttribute("param", "inherit");
+        }
+        else {
+            inputTag->SetAttribute("param", std::to_string(inputPair.second.newParam).c_str());
+            if (inputPair.second.rawParam) {
+                inputTag->SetAttribute("rawparam", true);
+                inputTag->SetAttribute("eventparam", std::to_string(inputPair.second.origParam).c_str());
+            } else {
+                inputTag->SetAttribute("eventparam", SDL_GetKeyName(static_cast<SDL_Keycode>(inputPair.second.origParam)));
+            }
+        }
+        inputs->InsertEndChild(inputTag);
+    }
+    doc.SaveFile(Filename::gameFile("inputs.xml").c_str(), false);
+}
+
+std::multimap<std::string, XmlInput>& InputSystem::getLoadedInputs()
+{
+    return loadedInputs;
 }
 
 InputSystem::IndexType InputSystem::create(const std::string& name, const InputFunction& callback)

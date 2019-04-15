@@ -17,9 +17,12 @@
 #include <SDL.h>
 #include <imgui.h>
 
+#include "inputeditor.h"
+
 Overlay::Overlay()
     : visible(false)
 {
+    editors.push_back(std::make_shared<InputEditor>());
 }
 
 void Overlay::update(double dt)

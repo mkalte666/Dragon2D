@@ -28,11 +28,23 @@ struct Input {
     InputFunction callback = nullptr;
 };
 
+struct XmlInput {
+    std::string name = "";
+    bool inherit = false;
+    int origParam = 0;
+    int newParam = 0;
+    bool rawParam = false;
+};
+
 class InputSystem {
 public:
     InputSystem();
     using ComponentType = Input;
     using IndexType = SlotMapIndex;
+
+    void load();
+    void save();
+    std::multimap<std::string, XmlInput>& getLoadedInputs();
 
     IndexType create(const std::string& name, const InputFunction& callback);
     IndexType create(const std::string& name, const py::function& callback);
@@ -47,12 +59,6 @@ public:
     static std::shared_ptr<InputSystem> instance;
 
 private:
-    struct XmlInput {
-        std::string name = "";
-        bool inherit = false;
-        int origParam = 0;
-        int newParam = 0;
-    };
 
     SlotMap<Input> inputs;
     std::multimap<std::string, XmlInput> loadedInputs;

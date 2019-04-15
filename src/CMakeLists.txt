@@ -49,6 +49,9 @@ set(utilSources
 set(editorSources 
 	editors/filedialog.cpp
 	editors/filedialog.h
+	editors/editor.h 
+	editors/inputeditor.cpp
+	editors/inputeditor.h
 	editors/overlay.cpp 
 	editors/overlay.h)
 
