@@ -13,6 +13,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "systems/init.h"
+#include "systems/animation.h"
 #include "systems/camera.h"
 #include "systems/collision.h"
 #include "systems/entitymanager.h"
@@ -29,6 +30,7 @@ void initSystems()
     TransformSystem::instance = std::make_shared<TransformSystem>();
     CameraSystem::instance = std::make_shared<CameraSystem>();
     SpriteSystem::instance = std::make_shared<SpriteSystem>();
+    AnimationSystem::instance = std::make_shared<AnimationSystem>();
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
     CollisionSystem::instance = std::make_shared<CollisionSystem>();
     SimplePhysicsSystem::instance = std::make_shared<SimplePhysicsSystem>();
@@ -57,6 +59,7 @@ void finishSystems()
     SimplePhysicsSystem::instance.reset();
     CollisionSystem::instance.reset();
     TilemapSystem::instance.reset();
+    AnimationSystem::instance.reset();
     SpriteSystem::instance.reset();
     CameraSystem::instance.reset();
     TransformSystem::instance.reset();
@@ -79,6 +82,7 @@ void updateSystems(double dt)
     EntityManager::instance->update(dt);
     SimplePhysicsSystem::instance->update(dt);
     TickSystem::instance->update(dt);
+    AnimationSystem::instance->update(dt);
     SpriteSystem::instance->update(dt);
     TilemapSystem::instance->update(dt);
 }

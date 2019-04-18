@@ -18,11 +18,13 @@
 #include <imgui.h>
 
 #include "inputeditor.h"
+#include "animationeditor.h"
 
 Overlay::Overlay()
     : visible(false)
 {
     editors.push_back(std::make_shared<InputEditor>());
+    editors.push_back(std::make_shared<AnimationEditor>());
 }
 
 void Overlay::update(double dt)

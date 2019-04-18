@@ -11,6 +11,8 @@ set(pythonSources
     python/python.h)
 
 set(systemSources 
+	systems/animation.cpp
+	systems/animation.h
 	systems/camera.cpp
 	systems/camera.h
 	systems/collision.cpp
@@ -47,6 +49,8 @@ set(utilSources
     util/tiled/tsx.h)
 
 set(editorSources 
+	editors/animationeditor.cpp
+	editors/animationeditor.h
 	editors/filedialog.cpp
 	editors/filedialog.h
 	editors/editor.h 

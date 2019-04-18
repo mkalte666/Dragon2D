@@ -19,6 +19,12 @@
 #include "util/rect.h"
 #include <cstdint>
 
+struct RawTextureData {
+    uint32_t width = 0;
+    uint32_t height = 0;
+    void* hwData = nullptr;
+};
+
 struct Sprite {
     TransformSystem::IndexType transformId = TransformSystem::IndexType();
     glm::vec2 offset = glm::vec2(0);
@@ -69,8 +75,8 @@ public:
 
     void update(double dt);
 
-    void* getSpriteTextureData(IndexType i);
-    void* getBatchTextureData(BatchIndexType i);
+    const RawTextureData& getSpriteTextureData(IndexType i);
+    const RawTextureData& getBatchTextureData(BatchIndexType i);
 
     static std::shared_ptr<SpriteSystem> instance;
 

@@ -17,9 +17,9 @@
 #include "runtime/window.h"
 #include "systems/camera.h"
 #include "util/slotmap.h"
+#include <GL/gl3w.h>
 #include <SDL.h>
 #include <SDL_image.h>
-#include <GL/gl3w.h>
 #include <glm/glm.hpp>
 
 class TextureWrapper {
@@ -37,7 +37,11 @@ public:
 
         // extract the texture id without crying too much about sdl internals
         SDL_GL_BindTexture(tex, nullptr, nullptr);
+        GLuint textureId = 0;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&textureId));
+        rawData.hwData = reinterpret_cast<void*>(static_cast<ptrdiff_t>(textureId));
+        rawData.width = static_cast<uint32_t>(surface->w);
+        rawData.height = static_cast<uint32_t>(surface->h);
         SDL_GL_UnbindTexture(tex);
 
         SDL_FreeSurface(surface);
@@ -47,7 +51,7 @@ public:
     {
         tex = other.tex;
         other.tex = nullptr;
-        textureId = other.textureId;
+        rawData = other.rawData;
     }
 
     TextureWrapper(const TextureWrapper& other) = delete;
@@ -62,13 +66,13 @@ public:
     }
 
     // for imgui and whatever
-    void* getRawTextureData() {
-
-        return reinterpret_cast<void*>(textureId);
+    const RawTextureData& getRawTextureData()
+    {
+        return rawData;
     }
 
     SDL_Texture* tex = nullptr;
-    GLuint textureId = 0;
+    RawTextureData rawData;
     int refcount = 0;
 };
 
@@ -314,7 +318,7 @@ void SpriteSystem::update(double dt)
 
         // centerd camera?
         if (camera.ceneterd) {
-            cameraOffset -= glm::vec2(cameraWorldRect.size())*0.5f;
+            cameraOffset -= glm::vec2(cameraWorldRect.size()) * 0.5f;
             cameraWorldRect -= glm::ivec2(glm::vec2(cameraWorldRect.size()) * 0.5f);
         }
 
@@ -355,24 +359,26 @@ void SpriteSystem::update(double dt)
     glm::vec2 cameraOffset = glm::vec2(0.0);
 }
 
-void* SpriteSystem::getSpriteTextureData(IndexType i)
+const RawTextureData& SpriteSystem::getSpriteTextureData(IndexType i)
 {
+    static RawTextureData dummy;
     auto& index = data->lookup[i];
     auto textureIter = data->textures.find(index.texture);
     if (textureIter != data->textures.end()) {
         return textureIter->getRawTextureData();
     }
-    return nullptr;
+    return dummy;
 }
 
-void* SpriteSystem::getBatchTextureData(BatchIndexType i)
+const RawTextureData& SpriteSystem::getBatchTextureData(BatchIndexType i)
 {
+    static RawTextureData dummy;
     auto& index = data->lookup[i];
     auto textureIter = data->textures.find(index.texture);
     if (textureIter != data->textures.end()) {
         return textureIter->getRawTextureData();
     }
-    return nullptr;
+    return dummy;
 }
 
 class PySprite {
