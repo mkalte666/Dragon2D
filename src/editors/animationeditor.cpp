@@ -153,7 +153,7 @@ void AnimationEditor::update(double dt)
         spriteSelectorActive = true;
         if (spriteSelected) {
             spriteSelected = false;
-            SpriteSystem::instance->removeSprite(spriteId);
+            RenderSystem::instance->removeSprite(spriteId);
         }
         if (spriteFilename.empty()) {
             spriteFilename = Filename::gameFile("/");
@@ -164,14 +164,14 @@ void AnimationEditor::update(double dt)
         spriteSelected = FileDialog("Select Sprite", spriteFilename, spriteSelectorActive);
         if (spriteSelected) {
             spriteSelectorActive = false;
-            spriteId = SpriteSystem::instance->createSprite(SlotMapIndex(), spriteFilename, 0);
+            spriteId = RenderSystem::instance->createSprite(SlotMapIndex(), spriteFilename, 0);
         }
     }
 
     if (spriteSelected) {
         ImGui::Separator();
-        auto& sprite = SpriteSystem::instance->getSprite(spriteId);
-        const auto& hwData = SpriteSystem::instance->getSpriteTextureData(spriteId);
+        auto& sprite = RenderSystem::instance->getSprite(spriteId);
+        const auto& hwData = RenderSystem::instance->getSpriteTextureData(spriteId);
         ImVec2 imageSize(static_cast<float>(sprite.source.w), static_cast<float>(sprite.source.h));
         ImVec2 uv0;
         uv0.x = static_cast<float>(sprite.source.x) / static_cast<float>(hwData.width);

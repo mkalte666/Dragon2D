@@ -16,7 +16,7 @@
 #define _systems_animation_h
 
 #include "systems/component.h"
-#include "systems/sprite.h"
+#include "systems/rendercomponents.h"
 #include "util/rect.h"
 
 struct Frame {
@@ -34,7 +34,7 @@ struct Animation {
 };
 
 struct AnimatedSprite {
-    SpriteSystem::IndexType spriteId;
+    RenderSystem::IndexType spriteId;
     std::vector<Animation> animations;
     size_t current = 0;
     std::string defaultAnimation = "";
@@ -52,7 +52,7 @@ public:
     using ComponentType = AnimatedSprite;
     using IndexType = SlotMapIndex;
 
-    IndexType create(const SpriteSystem::IndexType& spriteId, const std::string& filename);
+    IndexType create(const RenderSystem::IndexType& spriteId, const std::string& filename);
     IndexType create(const SpriteComponent& sprite, const std::string& filename);
     AnimatedSprite& get(const IndexType& i);
     void remove(const IndexType& i);

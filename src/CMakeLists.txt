@@ -29,8 +29,10 @@ set(systemSources
     systems/component.h
 	systems/simplephysics.cpp
 	systems/simplephysics.h
-    systems/sprite.cpp
-    systems/sprite.h
+    systems/render.cpp
+    systems/render.h
+	systems/rendercomponents.cpp
+	systems/rendercomponents.h
 	systems/tick.cpp
 	systems/tick.h
     systems/tilemap.cpp

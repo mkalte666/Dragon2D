@@ -121,14 +121,14 @@ void AnimatedSprite::save(const std::string& filename)
 
 std::shared_ptr<AnimationSystem> AnimationSystem::instance(nullptr);
 
-AnimationSystem::IndexType AnimationSystem::create(const SpriteSystem::IndexType& spriteId, const std::string& filename)
+AnimationSystem::IndexType AnimationSystem::create(const RenderSystem::IndexType& spriteId, const std::string& filename)
 {
     AnimatedSprite animation;
     animation.load(filename);
     animation.spriteId = spriteId;
 
     // figure out and set the default rect
-    auto& sprite = SpriteSystem::instance->getSprite(spriteId);
+    auto& sprite = RenderSystem::instance->getSprite(spriteId);
     size_t defaultAnimationId = 0;
     // a default animation is set
     if (!animation.defaultAnimation.empty()) {
@@ -202,7 +202,7 @@ void AnimationSystem::update(double dt)
         }
 
         // update the sprite
-        auto& sprite = SpriteSystem::instance->getSprite(animation.spriteId);
+        auto& sprite = RenderSystem::instance->getSprite(animation.spriteId);
         sprite.source = current.frames[current.currentFrame].src;
     }
 }

@@ -19,7 +19,7 @@
 #include "systems/entitymanager.h"
 #include "systems/input.h"
 #include "systems/simplephysics.h"
-#include "systems/sprite.h"
+#include "systems/render.h"
 #include "systems/tick.h"
 #include "systems/tilemap.h"
 #include "systems/transform.h"
@@ -29,7 +29,7 @@ void initSystems()
 
     TransformSystem::instance = std::make_shared<TransformSystem>();
     CameraSystem::instance = std::make_shared<CameraSystem>();
-    SpriteSystem::instance = std::make_shared<SpriteSystem>();
+    RenderSystem::instance = std::make_shared<RenderSystem>();
     AnimationSystem::instance = std::make_shared<AnimationSystem>();
     TilemapSystem::instance = std::make_shared<TilemapSystem>();
     CollisionSystem::instance = std::make_shared<CollisionSystem>();
@@ -60,7 +60,7 @@ void finishSystems()
     CollisionSystem::instance.reset();
     TilemapSystem::instance.reset();
     AnimationSystem::instance.reset();
-    SpriteSystem::instance.reset();
+    RenderSystem::instance.reset();
     CameraSystem::instance.reset();
     TransformSystem::instance.reset();
 
@@ -83,6 +83,6 @@ void updateSystems(double dt)
     SimplePhysicsSystem::instance->update(dt);
     TickSystem::instance->update(dt);
     AnimationSystem::instance->update(dt);
-    SpriteSystem::instance->update(dt);
+    RenderSystem::instance->update(dt);
     TilemapSystem::instance->update(dt);
 }

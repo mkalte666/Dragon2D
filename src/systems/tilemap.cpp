@@ -74,13 +74,13 @@ TilemapSystem::IndexType TilemapSystem::create(const TransformSystem::IndexType&
 
                     batch.push_back(std::move(sprite));
                 }
-                auto batchId = SpriteSystem::instance->createBatch(transformId, tileset.imageFilename, zLayerId, batch);
+                auto batchId = RenderSystem::instance->createBatch(transformId, tileset.imageFilename, zLayerId, batch);
                 // bounding rect of the chunk
                 Rect boundary;
                 boundary.w = chunk.width * tileset.tilew;
                 boundary.h = chunk.height * tileset.tileh;
                 boundary += glm::ivec2(chunkOffset);
-                SpriteSystem::instance->getBatch(batchId).boundary = boundary;
+                RenderSystem::instance->getBatch(batchId).boundary = boundary;
                 map.batches.push_back(batchId);
             }
         }
@@ -134,7 +134,7 @@ void TilemapSystem::remove(const IndexType& i)
 {
     if (auto iter = tilemaps.find(i); iter != tilemaps.end()) {
         for (auto&& batch : iter->batches) {
-            SpriteSystem::instance->removeBatch(batch);
+            RenderSystem::instance->removeBatch(batch);
         }
         for (auto&& collider : iter->colliders) {
             CollisionSystem::instance->remove(collider);

@@ -16,7 +16,7 @@
 #define _editors_animationeditor_h
 
 #include "editor.h"
-#include "systems/sprite.h"
+#include "systems/render.h"
 #include "systems/animation.h"
 
 class AnimationEditor : public Editor {
@@ -29,12 +29,12 @@ private:
     bool showAnimationEditor = false;
     bool spriteSelected = false;
     bool spriteSelectorActive = false;
-    SpriteSystem::IndexType spriteId = SpriteSystem::IndexType();
+    RenderSystem::IndexType spriteId = RenderSystem::IndexType();
     std::string spriteFilename = "";
     bool animationSelected = false;
     bool animationSelectorActive = false;
     std::string animationFilename = "";
-    AnimationSystem::IndexType animationId = SpriteSystem::IndexType();
+    AnimationSystem::IndexType animationId = RenderSystem::IndexType();
 };
 
 #endif //_editors_animationeditor_h

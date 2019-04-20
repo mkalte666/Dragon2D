@@ -1,5 +1,5 @@
 /*
-    sprite.h: sprite drawing system implementation
+    render.cpp: sprite drawing system implementation
     Copyright (C) 2019 Malte Kieﬂling
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include "sprite.h"
+#include "render.h"
 
 #include "runtime/window.h"
 #include "systems/camera.h"
@@ -76,7 +76,7 @@ public:
     int refcount = 0;
 };
 
-class SpriteSystemData {
+class RenderSystemData {
 public:
     // the textures
     using TextureMap = SlotMap<TextureWrapper>;
@@ -96,31 +96,31 @@ public:
     using Layers = std::array<SpriteLayer, 255>;
     Layers layers;
 
-    SlotMap<SpriteSystem::UniqueSpriteIndex> lookup;
-    SlotMap<SpriteSystem::UniqueBatchIndex> lookupBatch;
+    SlotMap<RenderSystem::UniqueSpriteIndex> lookup;
+    SlotMap<RenderSystem::UniqueBatchIndex> lookupBatch;
 
     // filename->texture association
     std::map<std::string, TextureMap::IndexType> filenames;
 };
 
-std::shared_ptr<SpriteSystem> SpriteSystem::instance(nullptr);
+std::shared_ptr<RenderSystem> RenderSystem::instance(nullptr);
 
-SpriteSystem::SpriteSystem()
+RenderSystem::RenderSystem()
 {
-    data.reset(new SpriteSystemData);
+    data.reset(new RenderSystemData);
 }
 
-SpriteSystem::~SpriteSystem()
+RenderSystem::~RenderSystem()
 {
     data.reset();
 }
 
-SpriteSystem::IndexType SpriteSystem::createSprite(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer)
+RenderSystem::IndexType RenderSystem::createSprite(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer)
 {
     return createSprite(transformComponent.getIndex(), filename, layer);
 }
 
-SpriteSystem::IndexType SpriteSystem::createSprite(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer)
+RenderSystem::IndexType RenderSystem::createSprite(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer)
 {
     Sprite newSprite;
 
@@ -129,7 +129,7 @@ SpriteSystem::IndexType SpriteSystem::createSprite(const TransformSystem::IndexT
         auto img = IMG_Load(filename.c_str());
         if (!img) {
             SDL_Log("Cannot open file %s - %s", filename.c_str(), IMG_GetError());
-            return SpriteSystem::IndexType();
+            return RenderSystem::IndexType();
         }
         // FIXME: does this really need to default? probably yes.
         newSprite.source.w = img->w;
@@ -145,7 +145,7 @@ SpriteSystem::IndexType SpriteSystem::createSprite(const TransformSystem::IndexT
     auto& drawLayer = data->layers[layer];
     auto textureLayer = drawLayer.find(texId);
     if (textureLayer == drawLayer.end()) {
-        textureLayer = drawLayer.insert(std::make_pair(texId, new SpriteSystemData::TextureEntry())).first;
+        textureLayer = drawLayer.insert(std::make_pair(texId, new RenderSystemData::TextureEntry())).first;
     }
 
     newSprite.transformId = transformId;
@@ -159,11 +159,11 @@ SpriteSystem::IndexType SpriteSystem::createSprite(const TransformSystem::IndexT
     return data->lookup.insert(index);
 }
 
-Sprite& SpriteSystem::getSprite(const IndexType& i)
+Sprite& RenderSystem::getSprite(const IndexType& i)
 {
     auto& index = data->lookup[i];
-    SpriteSystemData::TextureMap::IndexType texId(index.texture);
-    SpriteSystemData::SpriteList::IndexType spriteId(index.entry);
+    RenderSystemData::TextureMap::IndexType texId(index.texture);
+    RenderSystemData::SpriteList::IndexType spriteId(index.entry);
     auto& layer = data->layers[index.layer];
     auto& spriteLayer = layer.find(texId);
     auto& sprite = spriteLayer->second->sprites.find(spriteId);
@@ -171,11 +171,11 @@ Sprite& SpriteSystem::getSprite(const IndexType& i)
     return *sprite;
 }
 
-void SpriteSystem::removeSprite(const IndexType& i)
+void RenderSystem::removeSprite(const IndexType& i)
 {
     auto& index = data->lookup[i];
-    SpriteSystemData::TextureMap::IndexType texId(index.texture);
-    SpriteSystemData::SpriteList::IndexType spriteId(index.entry);
+    RenderSystemData::TextureMap::IndexType texId(index.texture);
+    RenderSystemData::SpriteList::IndexType spriteId(index.entry);
     auto& layer = data->layers[index.layer];
     auto& textures = data->textures;
     auto spriteLayerIter = layer.find(texId);
@@ -197,7 +197,7 @@ void SpriteSystem::removeSprite(const IndexType& i)
     }
 }
 
-SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer, const std::vector<BatchSprite>& inBatch)
+RenderSystem::BatchIndexType RenderSystem::createBatch(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer, const std::vector<BatchSprite>& inBatch)
 {
     SpriteBatch newBatch;
 
@@ -206,7 +206,7 @@ SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::In
         auto img = IMG_Load(filename.c_str());
         if (!img) {
             SDL_Log("Cannot open file %s - %s", filename.c_str(), IMG_GetError());
-            return SpriteSystem::IndexType();
+            return RenderSystem::IndexType();
         }
 
         auto texId = data->textures.emplace(img);
@@ -219,7 +219,7 @@ SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::In
     auto& drawLayer = data->layers[layer];
     auto textureLayer = drawLayer.find(texId);
     if (textureLayer == drawLayer.end()) {
-        textureLayer = drawLayer.insert(std::make_pair(texId, new SpriteSystemData::TextureEntry())).first;
+        textureLayer = drawLayer.insert(std::make_pair(texId, new RenderSystemData::TextureEntry())).first;
     }
 
     newBatch.transformId = transformId;
@@ -234,7 +234,7 @@ SpriteSystem::BatchIndexType SpriteSystem::createBatch(const TransformSystem::In
     return data->lookupBatch.insert(index);
 }
 
-SpriteBatch& SpriteSystem::getBatch(const BatchIndexType& i)
+SpriteBatch& RenderSystem::getBatch(const BatchIndexType& i)
 {
     auto& index = data->lookupBatch[i];
     auto& layer = data->layers[index.layer];
@@ -244,7 +244,7 @@ SpriteBatch& SpriteSystem::getBatch(const BatchIndexType& i)
     return *batch;
 }
 
-void SpriteSystem::removeBatch(const BatchIndexType& i)
+void RenderSystem::removeBatch(const BatchIndexType& i)
 {
     auto& index = data->lookupBatch[i];
     auto& layer = data->layers[index.layer];
@@ -300,7 +300,7 @@ inline void drawOne(
         hFlip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE || vFlip ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
 }
 
-void SpriteSystem::update(double dt)
+void RenderSystem::update(double dt)
 {
     SDL_Rect fullViewport;
     SDL_RenderGetViewport(Window::renderer, &fullViewport);
@@ -359,7 +359,7 @@ void SpriteSystem::update(double dt)
     glm::vec2 cameraOffset = glm::vec2(0.0);
 }
 
-const RawTextureData& SpriteSystem::getSpriteTextureData(IndexType i)
+const RawTextureData& RenderSystem::getSpriteTextureData(IndexType i)
 {
     static RawTextureData dummy;
     auto& index = data->lookup[i];
@@ -370,7 +370,7 @@ const RawTextureData& SpriteSystem::getSpriteTextureData(IndexType i)
     return dummy;
 }
 
-const RawTextureData& SpriteSystem::getBatchTextureData(BatchIndexType i)
+const RawTextureData& RenderSystem::getBatchTextureData(BatchIndexType i)
 {
     static RawTextureData dummy;
     auto& index = data->lookup[i];
@@ -394,14 +394,3 @@ public:
 };
 PyType<Sprite, PySprite, glm::vec2> pysprite;
 
-class PySpriteComponent {
-public:
-    static void initModule(py::module& m)
-    {
-        py::class_<SpriteComponent, SpriteComponent::Ptr, ComponentWrapperBase> c(m, "SpriteComponent");
-        c
-            .def(py::init<const TransformComponent&, const std::string&, uint8_t>())
-            .def("get", &SpriteComponent::get, py::return_value_policy::reference);
-    }
-};
-PyType<SpriteComponent, PySpriteComponent, ComponentWrapperBase, Sprite> pyspritecomponent;

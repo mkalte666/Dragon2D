@@ -16,11 +16,11 @@
 #define _systems_tilemap_h
 
 #include "systems/collision.h"
-#include "systems/sprite.h"
+#include "systems/render.h"
 
 struct Tilemap {
     std::vector<CollisionSystem::IndexType> colliders;
-    std::vector<SpriteSystem::BatchIndexType> batches;
+    std::vector<RenderSystem::BatchIndexType> batches;
 };
 
 class TilemapSystem {
