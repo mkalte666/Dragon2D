@@ -128,7 +128,7 @@ AnimationSystem::IndexType AnimationSystem::create(const SpriteSystem::IndexType
     animation.spriteId = spriteId;
 
     // figure out and set the default rect
-    auto& sprite = SpriteSystem::instance->get(spriteId);
+    auto& sprite = SpriteSystem::instance->getSprite(spriteId);
     size_t defaultAnimationId = 0;
     // a default animation is set
     if (!animation.defaultAnimation.empty()) {
@@ -202,7 +202,7 @@ void AnimationSystem::update(double dt)
         }
 
         // update the sprite
-        auto& sprite = SpriteSystem::instance->get(animation.spriteId);
+        auto& sprite = SpriteSystem::instance->getSprite(animation.spriteId);
         sprite.source = current.frames[current.currentFrame].src;
     }
 }

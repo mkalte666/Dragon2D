@@ -80,7 +80,7 @@ void AnimationEditor::update(double dt)
                 bool frameListHasChanged = false;
                 for (size_t i = 0; i < subAnimation.frames.size() && !frameListHasChanged; i++) {
                     auto& frame = subAnimation.frames[i];
-                    ImGui::PushID(i);
+                    ImGui::PushID(static_cast<int>(i));
                     if (ImGui::TreeNode("framelabel", "Frame Id: %d", i)) {
                         ImGui::InputDouble("Duration", &frame.duration, 0.01, 0.1);
                         int posArr[2] = { frame.src.x, frame.src.y };
@@ -153,7 +153,7 @@ void AnimationEditor::update(double dt)
         spriteSelectorActive = true;
         if (spriteSelected) {
             spriteSelected = false;
-            SpriteSystem::instance->remove(spriteId);
+            SpriteSystem::instance->removeSprite(spriteId);
         }
         if (spriteFilename.empty()) {
             spriteFilename = Filename::gameFile("/");
@@ -164,13 +164,13 @@ void AnimationEditor::update(double dt)
         spriteSelected = FileDialog("Select Sprite", spriteFilename, spriteSelectorActive);
         if (spriteSelected) {
             spriteSelectorActive = false;
-            spriteId = SpriteSystem::instance->create(SlotMapIndex(), spriteFilename, 0);
+            spriteId = SpriteSystem::instance->createSprite(SlotMapIndex(), spriteFilename, 0);
         }
     }
 
     if (spriteSelected) {
         ImGui::Separator();
-        auto& sprite = SpriteSystem::instance->get(spriteId);
+        auto& sprite = SpriteSystem::instance->getSprite(spriteId);
         const auto& hwData = SpriteSystem::instance->getSpriteTextureData(spriteId);
         ImVec2 imageSize(static_cast<float>(sprite.source.w), static_cast<float>(sprite.source.h));
         ImVec2 uv0;

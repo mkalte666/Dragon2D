@@ -29,12 +29,12 @@ private:
     bool showAnimationEditor = false;
     bool spriteSelected = false;
     bool spriteSelectorActive = false;
-    SpriteSystem::IndexType spriteId;
+    SpriteSystem::IndexType spriteId = SpriteSystem::IndexType();
     std::string spriteFilename = "";
     bool animationSelected = false;
     bool animationSelectorActive = false;
     std::string animationFilename = "";
-    AnimationSystem::IndexType animationId;
+    AnimationSystem::IndexType animationId = SpriteSystem::IndexType();
 };
 
 #endif //_editors_animationeditor_h

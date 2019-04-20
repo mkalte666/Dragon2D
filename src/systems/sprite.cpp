@@ -115,12 +115,12 @@ SpriteSystem::~SpriteSystem()
     data.reset();
 }
 
-SpriteSystem::IndexType SpriteSystem::create(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer)
+SpriteSystem::IndexType SpriteSystem::createSprite(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer)
 {
-    return create(transformComponent.getIndex(), filename, layer);
+    return createSprite(transformComponent.getIndex(), filename, layer);
 }
 
-SpriteSystem::IndexType SpriteSystem::create(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer)
+SpriteSystem::IndexType SpriteSystem::createSprite(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer)
 {
     Sprite newSprite;
 
@@ -159,7 +159,7 @@ SpriteSystem::IndexType SpriteSystem::create(const TransformSystem::IndexType& t
     return data->lookup.insert(index);
 }
 
-Sprite& SpriteSystem::get(const IndexType& i)
+Sprite& SpriteSystem::getSprite(const IndexType& i)
 {
     auto& index = data->lookup[i];
     SpriteSystemData::TextureMap::IndexType texId(index.texture);
@@ -171,7 +171,7 @@ Sprite& SpriteSystem::get(const IndexType& i)
     return *sprite;
 }
 
-void SpriteSystem::remove(const IndexType& i)
+void SpriteSystem::removeSprite(const IndexType& i)
 {
     auto& index = data->lookup[i];
     SpriteSystemData::TextureMap::IndexType texId(index.texture);

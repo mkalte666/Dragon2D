@@ -64,10 +64,10 @@ public:
     SpriteSystem();
     ~SpriteSystem();
 
-    IndexType create(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer);
-    IndexType create(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer);
-    Sprite& get(const IndexType& i);
-    void remove(const IndexType& i);
+    IndexType createSprite(const TransformComponent& transformComponent, const std::string& filename, uint8_t layer);
+    IndexType createSprite(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer);
+    Sprite& getSprite(const IndexType& i);
+    void removeSprite(const IndexType& i);
 
     BatchIndexType createBatch(const TransformSystem::IndexType& transformId, const std::string& filename, uint8_t layer, const std::vector<BatchSprite>& inBatch);
     SpriteBatch& getBatch(const BatchIndexType& i);
@@ -84,6 +84,39 @@ private:
     std::unique_ptr<SpriteSystemData> data;
 };
 
-using SpriteComponent = ComponentWrapper<SpriteSystem>;
+class SpriteComponent : public ComponentWrapperBase {
+public:
+    using ComponentType = Sprite;
+    using IndexType = SlotMapIndex;
+    using Ptr = std::shared_ptr<SpriteComponent>;
+
+    template <typename... Args>
+    SpriteComponent(Args&&... args)
+    {
+        index = SpriteSystem::instance->createSprite(std::forward<Args>(args)...);
+        valid = true;
+    }
+    ~SpriteComponent()
+    {
+        SpriteSystem::instance->removeSprite(index);
+    }
+
+    SpriteComponent(SpriteComponent&& other) = delete;
+    SpriteComponent(const SpriteComponent& other) = delete;
+
+    Sprite& get()
+    {
+        return SpriteSystem::instance->getSprite(index);
+    }
+
+    IndexType getIndex() const
+    {
+        return index;
+    }
+
+private:
+    IndexType index;
+    bool valid;
+};
 
 #endif //_systems_sprite_h
